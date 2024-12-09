@@ -10,16 +10,15 @@ pub mod fundus {
 
     pub fn initialize(ctx: Context<InitializeCtx>) -> Result<()> {
         let state = &mut ctx.accounts.program_state;
-        let deployer = &mut ctx.accounts.deployer;
+        let deployer = &ctx.accounts.deployer;
 
-        if state.initialized {
-            return err!(ErrorCode::AlreadyInitialized);
-        }
+        require!(!state.initialized, ErrorCode::AlreadyInitialized);
 
         state.campaign_count = 0;
-        state.platform_fee = 5;
+        state.platform_fee = 5; // Default platform fee (in %)
         state.platform_address = deployer.key();
         state.initialized = true;
+
         Ok(())
     }
 
@@ -32,6 +31,11 @@ pub mod fundus {
     ) -> Result<()> {
         let campaign = &mut ctx.accounts.campaign;
         let state = &mut ctx.accounts.program_state;
+
+        require!(title.len() <= 64, ErrorCode::TitleTooLong);
+        require!(description.len() <= 512, ErrorCode::DescriptionTooLong);
+        require!(image_url.len() <= 256, ErrorCode::ImageUrlTooLong);
+        require!(goal > 0, ErrorCode::InvalidGoalAmount);
 
         state.campaign_count += 1;
 
@@ -47,25 +51,18 @@ pub mod fundus {
         campaign.timestamp = Clock::get()?.unix_timestamp as u64;
         campaign.active = true;
 
-        // Save the bump seed
-        let (_campaign_pda, bump) = Pubkey::find_program_address(
-            &[b"campaign", campaign.cid.to_le_bytes().as_ref()],
-            ctx.program_id,
-        );
-
-        campaign.bump = bump;
-
         Ok(())
     }
 
     pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
         let campaign = &mut ctx.accounts.campaign;
-        let donor = &mut ctx.accounts.donor;
+        let donor = &ctx.accounts.donor;
         let contribution = &mut ctx.accounts.contribution;
 
+        require!(campaign.active, ErrorCode::InactiveCampaign);
         require!(amount >= 1_000_000_000, ErrorCode::InvalidDonationAmount);
 
-        // Transfering lamports from the donor to the campaign
+        // Transfer lamports from the donor to the campaign
         let tx_instruction = anchor_lang::solana_program::system_instruction::transfer(
             &donor.key(),
             &campaign.key(),
@@ -78,6 +75,7 @@ pub mod fundus {
         );
 
         if let Err(e) = result {
+            msg!("Donation transfer failed: {:?}", e); // Logging transfer failure
             return Err(e.into());
         }
 
@@ -93,27 +91,32 @@ pub mod fundus {
 
     pub fn withdraw(ctx: Context<WithdrawCtx>, cid: u64, amount: u64) -> Result<()> {
         let campaign = &mut ctx.accounts.campaign;
-        let creator = &mut ctx.accounts.creator;
+        let creator = &ctx.accounts.creator;
         let withdrawal = &mut ctx.accounts.withdrawal;
         let state = &mut ctx.accounts.program_state;
-        let platform_account_info = &ctx.accounts.platform_address; // Get the platform account info
+        let platform_account_info = &ctx.accounts.platform_address;
 
         require!(campaign.active, ErrorCode::InactiveCampaign);
         require!(campaign.creator == creator.key(), ErrorCode::Unauthorized);
+        require!(amount > 0, ErrorCode::InvalidWithdrawalAmount);
         require!(
             campaign.amount_raised >= amount,
             ErrorCode::InsufficientFund
         );
 
-        // Ensure campaign has enough lamports after rent exemption
+        require!(
+            platform_account_info.key() == state.platform_address,
+            ErrorCode::InvalidPlatformAddress
+        );
+
         let rent_balance = Rent::get()?.minimum_balance(campaign.to_account_info().data_len());
         if **campaign.to_account_info().lamports.borrow() - rent_balance < amount {
-            return Err(ErrorCode::InsufficientFund.into());
+            msg!("Withdrawal exceeds campaign's usable balance.");
+            return err!(ErrorCode::InsufficientFund);
         }
 
-        // Calculate 95%-5% split
-        let platform_fee = amount * state.platform_fee / 100; // 5% for the platform
-        let creator_amount = amount - platform_fee; // 95% for the creator
+        let platform_fee = amount * state.platform_fee / 100;
+        let creator_amount = amount - platform_fee;
 
         // Transfer 95% to the creator
         **campaign.to_account_info().try_borrow_mut_lamports()? -= creator_amount;
@@ -123,14 +126,37 @@ pub mod fundus {
         **campaign.to_account_info().try_borrow_mut_lamports()? -= platform_fee;
         **platform_account_info.try_borrow_mut_lamports()? += platform_fee;
 
-        // Update campaign state
         campaign.amount_raised -= amount;
         campaign.withdrawals += 1;
 
-        // Update withdrawal details
         withdrawal.amount = amount;
         withdrawal.cid = cid;
         withdrawal.creator_address = creator.key();
+
+        Ok(())
+    }
+
+    pub fn update_platform_settings(
+        ctx: Context<UpdatePlatformSettingsCtx>,
+        new_platform_fee: u64,
+    ) -> Result<()> {
+        let state = &mut ctx.accounts.program_state;
+        let updater = &ctx.accounts.updater;
+
+        // Ensure the caller is the current platform address
+        require!(
+            updater.key() == state.platform_address,
+            ErrorCode::Unauthorized
+        );
+
+        // Ensure the platform fee is within a reasonable range (0-100%)
+        require!(
+            (1..=100).contains(&new_platform_fee),
+            ErrorCode::InvalidPlatformFee
+        );
+
+        // Update platform settings
+        state.platform_fee = new_platform_fee;
 
         Ok(())
     }
@@ -240,10 +266,23 @@ pub struct WithdrawCtx<'info> {
     #[account(mut)]
     pub program_state: Account<'info, ProgramState>,
 
-    /// CHECK: We are passing the account to be used as the 
+    /// CHECK: We are passing the account to be used as the
     pub platform_address: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,
+}
+
+#[derive(Accounts)]
+pub struct UpdatePlatformSettingsCtx<'info> {
+    #[account(mut)]
+    pub updater: Signer<'info>, // The signer must be the current platform address
+
+    #[account(
+        mut,
+        seeds = [b"program_state"],
+        bump
+    )]
+    pub program_state: Account<'info, ProgramState>,
 }
 
 #[account]
@@ -263,7 +302,6 @@ pub struct Campaign {
     pub donors: u64,
     pub withdrawals: u64,
     pub active: bool,
-    pub bump: u8,
 }
 
 #[account]
@@ -295,12 +333,26 @@ pub struct ProgramState {
 pub enum ErrorCode {
     #[msg("The program has already been initialized.")]
     AlreadyInitialized,
-    #[msg("Amount cannot be zero.")]
-    InvalidDonationAmount,
+    #[msg("Title exceeds the maximum length of 64 characters.")]
+    TitleTooLong,
+    #[msg("Description exceeds the maximum length of 512 characters.")]
+    DescriptionTooLong,
+    #[msg("Image URL exceeds the maximum length of 256 characters.")]
+    ImageUrlTooLong,
+    #[msg("Invalid goal amount. Goal must be greater than zero.")]
+    InvalidGoalAmount,
     #[msg("Campaign is inactive.")]
     InactiveCampaign,
+    #[msg("Donation amount must be at least 1 SOL.")]
+    InvalidDonationAmount,
     #[msg("Unauthorized access.")]
     Unauthorized,
-    #[msg("Amount raised too small for withdrawal.")]
+    #[msg("Withdrawal amount must be greater than zero.")]
+    InvalidWithdrawalAmount,
+    #[msg("Insufficient funds in the campaign.")]
     InsufficientFund,
+    #[msg("Invalid platform fee percentage.")]
+    InvalidPlatformFee,
+    #[msg("The provided platform address is invalid.")]
+    InvalidPlatformAddress,
 }

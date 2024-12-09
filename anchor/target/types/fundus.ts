@@ -178,6 +178,58 @@ export type Fundus = {
       "args": []
     },
     {
+      "name": "updatePlatformSettings",
+      "discriminator": [
+        213,
+        238,
+        2,
+        39,
+        128,
+        157,
+        3,
+        95
+      ],
+      "accounts": [
+        {
+          "name": "updater",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "programState",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  103,
+                  114,
+                  97,
+                  109,
+                  95,
+                  115,
+                  116,
+                  97,
+                  116,
+                  101
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "newPlatformFee",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "withdraw",
       "discriminator": [
         183,
@@ -310,23 +362,58 @@ export type Fundus = {
     },
     {
       "code": 6001,
-      "name": "invalidDonationAmount",
-      "msg": "Amount cannot be zero."
+      "name": "titleTooLong",
+      "msg": "Title exceeds the maximum length of 64 characters."
     },
     {
       "code": 6002,
+      "name": "descriptionTooLong",
+      "msg": "Description exceeds the maximum length of 512 characters."
+    },
+    {
+      "code": 6003,
+      "name": "imageUrlTooLong",
+      "msg": "Image URL exceeds the maximum length of 256 characters."
+    },
+    {
+      "code": 6004,
+      "name": "invalidGoalAmount",
+      "msg": "Invalid goal amount. Goal must be greater than zero."
+    },
+    {
+      "code": 6005,
       "name": "inactiveCampaign",
       "msg": "Campaign is inactive."
     },
     {
-      "code": 6003,
+      "code": 6006,
+      "name": "invalidDonationAmount",
+      "msg": "Donation amount must be at least 1 SOL."
+    },
+    {
+      "code": 6007,
       "name": "unauthorized",
       "msg": "Unauthorized access."
     },
     {
-      "code": 6004,
+      "code": 6008,
+      "name": "invalidWithdrawalAmount",
+      "msg": "Withdrawal amount must be greater than zero."
+    },
+    {
+      "code": 6009,
       "name": "insufficientFund",
-      "msg": "Amount raised too small for withdrawal."
+      "msg": "Insufficient funds in the campaign."
+    },
+    {
+      "code": 6010,
+      "name": "invalidPlatformFee",
+      "msg": "Invalid platform fee percentage."
+    },
+    {
+      "code": 6011,
+      "name": "invalidPlatformAddress",
+      "msg": "The provided platform address is invalid."
     }
   ],
   "types": [
@@ -378,10 +465,6 @@ export type Fundus = {
           {
             "name": "active",
             "type": "bool"
-          },
-          {
-            "name": "bump",
-            "type": "u8"
           }
         ]
       }
