@@ -7,7 +7,7 @@ pub fn initialize(ctx: Context<InitializeCtx>) -> Result<()> {
     let state = &mut ctx.accounts.program_state;
     let deployer = &ctx.accounts.deployer;
 
-    if !state.initialized {
+    if state.initialized {
         return Err(AlreadyInitialized.into());
     }
 
