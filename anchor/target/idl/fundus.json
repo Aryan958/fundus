@@ -160,7 +160,7 @@
           }
         },
         {
-          "name": "signer",
+          "name": "deployer",
           "writable": true,
           "signer": true
         },
@@ -170,6 +170,76 @@
         }
       ],
       "args": []
+    },
+    {
+      "name": "withdraw",
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "cid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "withdrawal",
+          "writable": true
+        },
+        {
+          "name": "program_state",
+          "writable": true
+        },
+        {
+          "name": "platform_address"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cid",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -211,6 +281,19 @@
         167,
         230
       ]
+    },
+    {
+      "name": "Withdrawal",
+      "discriminator": [
+        10,
+        45,
+        211,
+        182,
+        129,
+        235,
+        90,
+        82
+      ]
     }
   ],
   "errors": [
@@ -223,6 +306,21 @@
       "code": 6001,
       "name": "InvalidDonationAmount",
       "msg": "Amount cannot be zero."
+    },
+    {
+      "code": 6002,
+      "name": "InactiveCampaign",
+      "msg": "Campaign is inactive."
+    },
+    {
+      "code": 6003,
+      "name": "Unauthorized",
+      "msg": "Unauthorized access."
+    },
+    {
+      "code": 6004,
+      "name": "InsufficientFund",
+      "msg": "Amount raised too small for withdrawal."
     }
   ],
   "types": [
@@ -268,8 +366,16 @@
             "type": "u64"
           },
           {
+            "name": "withdrawals",
+            "type": "u64"
+          },
+          {
             "name": "active",
             "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -305,6 +411,34 @@
           },
           {
             "name": "campaign_count",
+            "type": "u64"
+          },
+          {
+            "name": "platform_fee",
+            "type": "u64"
+          },
+          {
+            "name": "platform_address",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Withdrawal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creator_address",
+            "type": "pubkey"
+          },
+          {
+            "name": "cid",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
             "type": "u64"
           }
         ]

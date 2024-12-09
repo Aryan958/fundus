@@ -166,7 +166,7 @@ export type Fundus = {
           }
         },
         {
-          "name": "signer",
+          "name": "deployer",
           "writable": true,
           "signer": true
         },
@@ -176,6 +176,76 @@ export type Fundus = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "withdraw",
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "cid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "withdrawal",
+          "writable": true
+        },
+        {
+          "name": "programState",
+          "writable": true
+        },
+        {
+          "name": "platformAddress"
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cid",
+          "type": "u64"
+        },
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
     }
   ],
   "accounts": [
@@ -217,6 +287,19 @@ export type Fundus = {
         167,
         230
       ]
+    },
+    {
+      "name": "withdrawal",
+      "discriminator": [
+        10,
+        45,
+        211,
+        182,
+        129,
+        235,
+        90,
+        82
+      ]
     }
   ],
   "errors": [
@@ -229,6 +312,21 @@ export type Fundus = {
       "code": 6001,
       "name": "invalidDonationAmount",
       "msg": "Amount cannot be zero."
+    },
+    {
+      "code": 6002,
+      "name": "inactiveCampaign",
+      "msg": "Campaign is inactive."
+    },
+    {
+      "code": 6003,
+      "name": "unauthorized",
+      "msg": "Unauthorized access."
+    },
+    {
+      "code": 6004,
+      "name": "insufficientFund",
+      "msg": "Amount raised too small for withdrawal."
     }
   ],
   "types": [
@@ -274,8 +372,16 @@ export type Fundus = {
             "type": "u64"
           },
           {
+            "name": "withdrawals",
+            "type": "u64"
+          },
+          {
             "name": "active",
             "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
           }
         ]
       }
@@ -311,6 +417,34 @@ export type Fundus = {
           },
           {
             "name": "campaignCount",
+            "type": "u64"
+          },
+          {
+            "name": "platformFee",
+            "type": "u64"
+          },
+          {
+            "name": "platformAddress",
+            "type": "pubkey"
+          }
+        ]
+      }
+    },
+    {
+      "name": "withdrawal",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "creatorAddress",
+            "type": "pubkey"
+          },
+          {
+            "name": "cid",
+            "type": "u64"
+          },
+          {
+            "name": "amount",
             "type": "u64"
           }
         ]

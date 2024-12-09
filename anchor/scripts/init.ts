@@ -50,7 +50,7 @@ async function main(cluster: string) {
     const tx = await program.rpc.initialize({
       accounts: {
         programState: programStatePda,
-        signer: provider.wallet.publicKey,
+        deployer: provider.wallet.publicKey,
         systemProgram: SystemProgram.programId,
       },
     })

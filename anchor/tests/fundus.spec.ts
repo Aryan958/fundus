@@ -6,7 +6,7 @@ describe('fundus', () => {
   anchor.setProvider(provider)
   const program = anchor.workspace.Fundus
 
-  let CID: any, DONOR_COUNT: any
+  let CID: any, DONOR_COUNT: any, WITHDRAWAL_COUNT: any
 
   it('creates a campaign', async () => {
     const user = provider.wallet
@@ -41,6 +41,7 @@ describe('fundus', () => {
     const campaign = await program.account.campaign.fetch(campaignPda)
     console.log('Campaign:', campaign)
     DONOR_COUNT = campaign.donors
+    WITHDRAWAL_COUNT = campaign.withdrawals
   })
 
   it('donate to campaign', async () => {
@@ -64,7 +65,7 @@ describe('fundus', () => {
     const donorBefore = await provider.connection.getBalance(user.publicKey)
     const campaignBefore = await provider.connection.getBalance(campaignPda)
 
-    const donation_amount = new anchor.BN(Math.round(1.5 * 1_000_000_000)) // 1.5 SOL in lamports
+    const donation_amount = new anchor.BN(Math.round(10.5 * 1_000_000_000)) // 1.5 SOL in lamports
     await program.rpc.donate(CID, donation_amount, {
       accounts: {
         donor: user.publicKey,
@@ -87,6 +88,73 @@ describe('fundus', () => {
         donorBefore: ${donorBefore},
         donorAfter: ${donorAfter},
         donation_amount: ${donation_amount.toNumber()}
+      `
+    )
+    console.log(
+      `
+        campaignBefore: ${campaignBefore},
+        campaignAfter: ${campaignAfter},
+        donation_amount: ${donation_amount.toNumber()}
+      `
+    )
+  })
+
+  it('withdraws from campaign', async () => {
+    const user = provider.wallet
+
+    const [programStatePda] = await PublicKey.findProgramAddress(
+      [Buffer.from('program_state')],
+      program.programId
+    )
+
+    const [campaignPda] = await PublicKey.findProgramAddress(
+      [Buffer.from('campaign'), CID.toArrayLike(Buffer, 'le', 8)],
+      program.programId
+    )
+
+    const [withdrawalPda] = await PublicKey.findProgramAddress(
+      [
+        Buffer.from('withdraw'),
+        user.publicKey.toBuffer(),
+        CID.toArrayLike(Buffer, 'le', 8),
+        WITHDRAWAL_COUNT.add(new anchor.BN(1)).toArrayLike(Buffer, 'le', 8),
+      ],
+      program.programId
+    )
+
+    const donorBefore = await provider.connection.getBalance(user.publicKey)
+    const campaignBefore = await provider.connection.getBalance(campaignPda)
+
+    const programState = await program.account.programState.fetch(
+      programStatePda
+    )
+    const platformAddress = programState.platformAddress
+
+    const donation_amount = new anchor.BN(Math.round(3.5 * 1_000_000_000)) // 1.5 SOL in lamports
+    const tx = await program.rpc.withdraw(CID, donation_amount, {
+      accounts: {
+        creator: user.publicKey,
+        campaign: campaignPda,
+        withdrawal: withdrawalPda,
+        platformAddress: platformAddress,
+        programState: programStatePda,
+        systemProgram: SystemProgram.programId,
+      },
+    })
+
+    console.log(tx)
+
+    const donorAfter = await provider.connection.getBalance(user.publicKey)
+    const campaignAfter = await provider.connection.getBalance(campaignPda)
+
+    const withdrawal = await program.account.withdrawal.fetch(withdrawalPda)
+    console.log('withdrawal:', withdrawal)
+
+    console.log(
+      `
+        Before: ${donorBefore},
+        After: ${donorAfter},
+        amount: ${donation_amount.toNumber()}
       `
     )
     console.log(
