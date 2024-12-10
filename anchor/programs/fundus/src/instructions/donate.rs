@@ -8,9 +8,9 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
     let donor = &ctx.accounts.donor;
     let contribution = &mut ctx.accounts.contribution;
 
-    if !campaign.active {
-        return Err(InactiveCampaign.into());
-    }
+    // if !campaign.active {
+    //     return Err(InactiveCampaign.into());
+    // }
 
     if amount < 1_000_000_000 {
         return Err(InvalidDonationAmount.into());

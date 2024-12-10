@@ -26,4 +26,8 @@ pub enum ErrorCode {
     InvalidPlatformFee,
     #[msg("The provided platform address is invalid.")]
     InvalidPlatformAddress,
+    #[msg("Campaign not found.")]
+    CampaignNotFound,
+    #[msg("Campaign already received funding.")]
+    CampaignAlreadyFunded,
 }

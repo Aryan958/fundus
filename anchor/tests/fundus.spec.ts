@@ -52,6 +52,75 @@ describe('fundus', () => {
     WITHDRAWAL_COUNT = campaign.withdrawals
   })
 
+  it('updates a campaign', async () => {
+    const creator = provider.wallet
+    // Derive Campaign PDA
+    const [campaignPda] = await PublicKey.findProgramAddress(
+      [Buffer.from('campaign'), CID.toBuffer('le', 8)],
+      program.programId
+    )
+
+    console.log(`campaignPda: ${campaignPda.toString()}`)
+
+    // Define updated data
+    const newTitle = `Updated Campaign Title #${CID.toString()}`
+    const newDescription = `Updated Campaign Description #${CID.toString()}`
+    const newImageUrl = `https://updated_image_${CID.toString()}.png`
+    const newGoal = new anchor.BN(7500) // Updated goal
+
+    const campaignBefore = await program.account.campaign.fetch(campaignPda)
+    console.log('Campaign Before Update:', campaignBefore)
+
+    // Execute the update
+    const tx = await program.rpc.updateCampaign(
+      CID,
+      newTitle,
+      newDescription,
+      newImageUrl,
+      newGoal,
+      {
+        accounts: {
+          creator: creator.publicKey,
+          campaign: campaignPda,
+          systemProgram: SystemProgram.programId,
+        },
+      }
+    )
+
+    console.log('Transaction Signature:', tx)
+
+    // Fetch updated campaign data
+    const campaignAfter = await program.account.campaign.fetch(campaignPda)
+    console.log('Campaign After Update:', campaignAfter)
+  })
+
+  it('deletes a campaign', async () => {
+    const creator = provider.wallet
+    // Derive Campaign PDA
+    const [campaignPda] = await PublicKey.findProgramAddress(
+      [Buffer.from('campaign'), CID.toBuffer('le', 8)],
+      program.programId
+    )
+
+    // Fetch campaign before deletion
+    const campaignBefore = await program.account.campaign.fetch(campaignPda)
+    console.log('Campaign Before Deletion:', campaignBefore)
+
+    // Execute the deletion
+    const tx = await program.rpc.deleteCampaign(CID, {
+      accounts: {
+        creator: creator.publicKey,
+        campaign: campaignPda,
+        systemProgram: SystemProgram.programId,
+      },
+    })
+
+    console.log('Transaction Signature:', tx)
+
+    const campaignAfter = await program.account.campaign.fetch(campaignPda)
+    console.log('Campaign After Deletion:', campaignAfter)
+  })
+
   it('donate to campaign', async () => {
     const donor = provider.wallet
 
