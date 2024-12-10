@@ -64,6 +64,61 @@ export type Fundus = {
       ]
     },
     {
+      "name": "deleteCampaign",
+      "discriminator": [
+        223,
+        105,
+        48,
+        131,
+        88,
+        27,
+        249,
+        227
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "cid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cid",
+          "type": "u64"
+        }
+      ]
+    },
+    {
       "name": "donate",
       "discriminator": [
         121,
@@ -176,6 +231,77 @@ export type Fundus = {
         }
       ],
       "args": []
+    },
+    {
+      "name": "updateCampaign",
+      "discriminator": [
+        235,
+        31,
+        39,
+        49,
+        121,
+        173,
+        19,
+        92
+      ],
+      "accounts": [
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "campaign",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  97,
+                  109,
+                  112,
+                  97,
+                  105,
+                  103,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "cid"
+              }
+            ]
+          }
+        },
+        {
+          "name": "systemProgram",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "cid",
+          "type": "u64"
+        },
+        {
+          "name": "title",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "imageUrl",
+          "type": "string"
+        },
+        {
+          "name": "goal",
+          "type": "u64"
+        }
+      ]
     },
     {
       "name": "updatePlatformSettings",
@@ -414,6 +540,16 @@ export type Fundus = {
       "code": 6011,
       "name": "invalidPlatformAddress",
       "msg": "The provided platform address is invalid."
+    },
+    {
+      "code": 6012,
+      "name": "campaignNotFound",
+      "msg": "Campaign not found."
+    },
+    {
+      "code": 6013,
+      "name": "campaignAlreadyFunded",
+      "msg": "Campaign already received funding."
     }
   ],
   "types": [

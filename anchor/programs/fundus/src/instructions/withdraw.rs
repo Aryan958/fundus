@@ -10,9 +10,9 @@ pub fn withdraw(ctx: Context<WithdrawCtx>, cid: u64, amount: u64) -> Result<()> 
     let state = &mut ctx.accounts.program_state;
     let platform_account_info = &ctx.accounts.platform_address;
 
-    if !campaign.active {
-        return Err(InactiveCampaign.into());
-    }
+    // if !campaign.active {
+    //     return Err(InactiveCampaign.into());
+    // }
 
     if creator.key() != campaign.creator {
         return Err(Unauthorized.into());
