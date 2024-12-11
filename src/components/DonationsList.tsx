@@ -1,9 +1,9 @@
 import { truncateAddress } from '@/utils/helper'
-import { Contribution } from '@/utils/interfaces'
+import { Transaction } from '@/utils/interfaces'
 import React from 'react'
 import { FaMoneyBillWave } from 'react-icons/fa'
 
-const DonationsList: React.FC<{ donations: Contribution[] }> = ({
+const DonationsList: React.FC<{ donations: Transaction[] }> = ({
   donations,
 }) => {
   return (
@@ -20,14 +20,14 @@ const DonationsList: React.FC<{ donations: Contribution[] }> = ({
               className="px-4 py-2 flex justify-between items-center"
             >
               <p className="text-gray-800 flex justify-start items-center space-x-1">
-                <strong>{truncateAddress(donation.donorAddress)}</strong>{' '}
+                <strong>{truncateAddress(donation.owner)}</strong>{' '}
                 <small className="text-green-500">
                   ${donation.amount.toLocaleString()}
                 </small>
               </p>
 
               <p className="text-sm text-gray-600">
-                {new Date().toLocaleDateString()}
+                {new Date(donation.timestamp).toLocaleDateString()}
               </p>
             </li>
           ))}

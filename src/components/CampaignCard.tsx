@@ -48,7 +48,7 @@ const CampaignCard: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
           </div>
         </div>
         <Link
-          href={`/campaign/${campaign.cid}`}
+          href={`/campaign/${campaign.publicKey}`}
           className="mt-4 w-full bg-green-600 hover:bg-green-700
           text-white text-sm font-semibold py-2 px-4 rounded-lg block text-center"
         >

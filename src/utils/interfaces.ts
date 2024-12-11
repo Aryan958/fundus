@@ -1,4 +1,5 @@
 export interface Campaign {
+  publicKey: string
   cid: number
   creator: string
   title: string
@@ -12,14 +13,9 @@ export interface Campaign {
   active: boolean
 }
 
-export interface Contribution {
-  donorAddress: string
+export interface Transaction {
+  owner: string
   cid: number
   amount: number
-}
-
-export interface Withdrawal {
-  creatorAddress: string
-  cid: number
-  amount: number
+  timestamp: number
 }

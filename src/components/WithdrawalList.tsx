@@ -1,9 +1,9 @@
 import { truncateAddress } from '@/utils/helper'
-import { Withdrawal } from '@/utils/interfaces'
+import { Transaction } from '@/utils/interfaces'
 import React from 'react'
 import { FaMoneyBillWave } from 'react-icons/fa'
 
-const WithdrawalList: React.FC<{ withdrawals: Withdrawal[] }> = ({
+const WithdrawalList: React.FC<{ withdrawals: Transaction[] }> = ({
   withdrawals,
 }) => {
   return (
@@ -20,13 +20,13 @@ const WithdrawalList: React.FC<{ withdrawals: Withdrawal[] }> = ({
               className="px-4 py-2 flex justify-between items-center"
             >
               <p className="text-gray-800 flex justify-start items-center space-x-1">
-                <strong>{truncateAddress(withdrawal.creatorAddress)}</strong>{' '}
+                <strong>{truncateAddress(withdrawal.owner)}</strong>{' '}
                 <small className="text-red-500">
                   ${withdrawal.amount.toLocaleString()}
                 </small>
               </p>
               <p className="text-sm text-gray-600">
-                {new Date().toLocaleDateString()}
+                {new Date(withdrawal.timestamp).toLocaleDateString()}
               </p>
             </li>
           ))}

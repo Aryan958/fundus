@@ -1,8 +1,14 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { createCampaign, getProvider } from '@/services/blockchain'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { title } from 'process'
+import { FormEvent, useMemo, useState } from 'react'
+import { toast } from 'react-toastify'
 
 export default function Page() {
+  const { publicKey, sendTransaction, signTransaction } = useWallet()
+
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -10,10 +16,47 @@ export default function Page() {
     goal: '',
   })
 
+  const program = useMemo(
+    () => getProvider(publicKey, signTransaction, sendTransaction),
+    [publicKey, signTransaction, sendTransaction]
+  )
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // await createCampaign(form);
-    // Redirect to Home or Campaign Details
+    const { title, description, image_url, goal } = form
+
+    await toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          const tx = await createCampaign(
+            program!,
+            publicKey!,
+            title,
+            description,
+            image_url,
+            Number(goal)
+          )
+
+          setForm({
+            title: '',
+            description: '',
+            image_url: '',
+            goal: '',
+          })
+
+          console.log(tx)
+          resolve(tx as any)
+        } catch (error) {
+          console.error('Transaction failed:', error)
+          reject(error)
+        }
+      }),
+      {
+        pending: 'Approve transaction...',
+        success: 'Transaction successful 👌',
+        error: 'Encountered error 🤯',
+      }
+    )
   }
 
   return (
@@ -26,7 +69,8 @@ export default function Page() {
           maxLength={64}
           value={form.title}
           onChange={(e) => setForm({ ...form, title: e.target.value })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded text-black"
+          required
         />
         <input
           type="url"
@@ -34,7 +78,8 @@ export default function Page() {
           maxLength={256}
           value={form.image_url}
           onChange={(e) => setForm({ ...form, image_url: e.target.value })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded text-black"
+          required
         />
         <input
           type="text"
@@ -43,10 +88,11 @@ export default function Page() {
           onChange={(e) => {
             const value = e.target.value
             if (/^\d*\.?\d{0,2}$/.test(value)) {
-              setForm({ ...form, goal: value})
+              setForm({ ...form, goal: value })
             }
           }}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded text-black"
+          required
         />
 
         <textarea
@@ -54,7 +100,8 @@ export default function Page() {
           maxLength={512}
           value={form.description}
           onChange={(e) => setForm({ ...form, description: e.target.value })}
-          className="w-full p-2 border rounded"
+          className="w-full p-2 border rounded text-black"
+          required
         />
         <button
           type="submit"

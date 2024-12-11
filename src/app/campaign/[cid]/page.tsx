@@ -5,32 +5,41 @@ import {
   contributions,
   withdrawals as dummyWithdrawals,
 } from '@/data'
-import { useEffect, useState } from 'react'
-import { Campaign, Contribution, Withdrawal } from '@/utils/interfaces'
+import { useEffect, useMemo, useState } from 'react'
+import { Campaign, Transaction } from '@/utils/interfaces'
 import { useParams } from 'next/navigation'
 import CampaignDetails from '@/components/CampaignDetails'
 import CampaignDonate from '@/components/CampaignDonate'
 import DonationsList from '@/components/DonationsList'
 import WithdrawalList from '@/components/WithdrawalList'
 import Image from 'next/image'
+import {
+  fetchCampaignDetails,
+  getReadonlyProvider,
+} from '@/services/blockchain'
 
 export default function CampaignPage() {
   const { cid } = useParams()
 
   const [campaign, setCampaign] = useState<Campaign | null>(null)
-  const [donations, setDonations] = useState<Contribution[]>([])
-  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([])
+  const [donations, setDonations] = useState<Transaction[]>([])
+  const [withdrawals, setWithdrawals] = useState<Transaction[]>([])
   const [loaded, setLoaded] = useState(false)
+
+  const program = useMemo(() => getReadonlyProvider(), [])
 
   useEffect(() => {
     if (cid) {
       // Here, you might want to filter or find the campaign based on cid instead of just setting the first one.
-      setCampaign(campaigns.find((c) => c.cid === Number(cid)) || null)
-      setDonations(contributions)
-      setWithdrawals(dummyWithdrawals)
+      const fetchDetails = async () => {
+        const data = await fetchCampaignDetails(program!, cid as string)
+        setCampaign(data)
+      }
+
+      fetchDetails()
     }
     setLoaded(true)
-  }, [cid])
+  }, [program, cid])
 
   if (!loaded) return <h4>Loading...</h4>
 
