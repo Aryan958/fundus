@@ -1,9 +1,7 @@
 pub mod campaign;
-pub mod contribution;
 pub mod program_state;
-pub mod withdrawal;
+pub mod transaction;
 
 pub use campaign::*;
-pub use contribution::*;
 pub use program_state::*;
-pub use withdrawal::*;
+pub use transaction::*;

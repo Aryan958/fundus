@@ -441,19 +441,6 @@ export type Fundus = {
       ]
     },
     {
-      "name": "contribution",
-      "discriminator": [
-        182,
-        187,
-        14,
-        111,
-        72,
-        167,
-        242,
-        212
-      ]
-    },
-    {
       "name": "programState",
       "discriminator": [
         77,
@@ -467,16 +454,16 @@ export type Fundus = {
       ]
     },
     {
-      "name": "withdrawal",
+      "name": "transaction",
       "discriminator": [
-        10,
-        45,
-        211,
-        182,
+        11,
+        24,
+        174,
         129,
-        235,
-        90,
-        82
+        203,
+        117,
+        242,
+        23
       ]
     }
   ],
@@ -606,26 +593,6 @@ export type Fundus = {
       }
     },
     {
-      "name": "contribution",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "donorAddress",
-            "type": "pubkey"
-          },
-          {
-            "name": "cid",
-            "type": "u64"
-          },
-          {
-            "name": "amount",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
       "name": "programState",
       "type": {
         "kind": "struct",
@@ -650,12 +617,12 @@ export type Fundus = {
       }
     },
     {
-      "name": "withdrawal",
+      "name": "transaction",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "creatorAddress",
+            "name": "owner",
             "type": "pubkey"
           },
           {
@@ -664,6 +631,10 @@ export type Fundus = {
           },
           {
             "name": "amount",
+            "type": "u64"
+          },
+          {
+            "name": "timestamp",
             "type": "u64"
           }
         ]

@@ -1,6 +1,6 @@
 use crate::constants::ANCHOR_DISCRIMINATOR_SIZE;
 use crate::errors::ErrorCode::*;
-use crate::states::{Campaign, Withdrawal, ProgramState};
+use crate::states::{Campaign, ProgramState, Transaction};
 use anchor_lang::prelude::*;
 
 pub fn withdraw(ctx: Context<WithdrawCtx>, cid: u64, amount: u64) -> Result<()> {
@@ -52,7 +52,8 @@ pub fn withdraw(ctx: Context<WithdrawCtx>, cid: u64, amount: u64) -> Result<()> 
 
     withdrawal.amount = amount;
     withdrawal.cid = cid;
-    withdrawal.creator_address = creator.key();
+    withdrawal.owner = creator.key();
+    withdrawal.timestamp = Clock::get()?.unix_timestamp as u64;
 
     Ok(())
 }
@@ -76,7 +77,7 @@ pub struct WithdrawCtx<'info> {
     #[account(
         init,
         payer = creator,
-        space = ANCHOR_DISCRIMINATOR_SIZE + Withdrawal::INIT_SPACE,
+        space = ANCHOR_DISCRIMINATOR_SIZE + Transaction::INIT_SPACE,
         seeds = [
             b"withdraw",
             creator.key().as_ref(),
@@ -85,7 +86,7 @@ pub struct WithdrawCtx<'info> {
         ],
         bump
     )]
-    pub withdrawal: Account<'info, Withdrawal>,
+    pub withdrawal: Account<'info, Transaction>,
 
     #[account(mut)]
     pub program_state: Account<'info, ProgramState>,

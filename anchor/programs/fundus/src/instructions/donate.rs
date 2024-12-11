@@ -1,6 +1,6 @@
 use crate::constants::ANCHOR_DISCRIMINATOR_SIZE;
 use crate::errors::ErrorCode::*;
-use crate::states::{Campaign, Contribution};
+use crate::states::{Campaign, Transaction};
 use anchor_lang::prelude::*;
 
 pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
@@ -38,7 +38,8 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
 
     contribution.amount = amount;
     contribution.cid = cid;
-    contribution.donor_address = donor.key();
+    contribution.owner = donor.key();
+    contribution.timestamp = Clock::get()?.unix_timestamp as u64;
 
     Ok(())
 }
@@ -62,7 +63,7 @@ pub struct DonateCtx<'info> {
     #[account(
         init,
         payer = donor,
-        space = ANCHOR_DISCRIMINATOR_SIZE + Contribution::INIT_SPACE,
+        space = ANCHOR_DISCRIMINATOR_SIZE + Transaction::INIT_SPACE,
         seeds = [
             b"donor",
             donor.key().as_ref(),
@@ -71,7 +72,7 @@ pub struct DonateCtx<'info> {
         ],
         bump
     )]
-    pub contribution: Account<'info, Contribution>,
+    pub contribution: Account<'info, Transaction>,
 
     pub system_program: Program<'info, System>,
 }

@@ -157,7 +157,7 @@ describe('fundus', () => {
     const donorAfter = await provider.connection.getBalance(donor.publicKey)
     const campaignAfter = await provider.connection.getBalance(campaignPda)
 
-    const contribution = await program.account.contribution.fetch(
+    const contribution = await program.account.transaction.fetch(
       contributionPda
     )
     console.log('Contribution:', contribution)
@@ -247,7 +247,7 @@ describe('fundus', () => {
     )
 
     // Fetch withdrawal account details
-    const withdrawal = await program.account.withdrawal.fetch(withdrawalPda)
+    const withdrawal = await program.account.transaction.fetch(withdrawalPda)
     console.log('Withdrawal Details:', withdrawal)
 
     // Calculate expected platform fee
