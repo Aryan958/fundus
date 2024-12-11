@@ -2,6 +2,7 @@ import { Campaign } from '@/utils/interfaces'
 import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
+import { FaCoins, FaUsers } from 'react-icons/fa'
 
 const CampaignCard: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
   const progressPercentage = Math.min(
@@ -36,10 +37,12 @@ const CampaignCard: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
             />
           </div>
           <div className="flex justify-between items-center mt-2 text-sm">
-            <span className="text-gray-700">
+            <span className="text-gray-700 flex items-center space-x-1">
+              <FaCoins className="text-green-500" />
               <strong>{campaign.amountRaised}</strong> SOL Raised
             </span>
-            <span className="text-gray-700">
+            <span className="text-gray-700 flex items-center space-x-1">
+              <FaUsers className="text-black" />
               <strong>{campaign.donors}</strong> Donors
             </span>
           </div>

@@ -1,9 +1,16 @@
 'use client'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
+import { FaUserCircle, FaPlusCircle, FaBars, FaTimes } from 'react-icons/fa'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   return (
     <header className="bg-white shadow-md fixed w-full top-0 z-50">
@@ -14,45 +21,41 @@ export default function Header() {
         </Link>
 
         {/* Desktop Menu */}
-        <nav className="hidden md:flex space-x-6">
+        <nav className="hidden md:flex space-x-6 items-center">
           <Link
             href="/account"
-            className="text-gray-700 hover:text-green-600 transition duration-300"
+            className="text-gray-700 hover:text-green-600 flex items-center space-x-1 transition duration-300"
           >
-            Account
+            <FaUserCircle className="text-gray-700 hover:text-green-600" />
+            <span>Account</span>
           </Link>
           <Link
             href="/create"
-            className="text-gray-700 hover:text-green-600 transition duration-300"
+            className="text-gray-700 hover:text-green-600 flex items-center space-x-1 transition duration-300"
           >
-            Create
+            <FaPlusCircle className="text-gray-700 hover:text-green-600" />
+            <span>Create</span>
           </Link>
         </nav>
 
-        {/* CTA Button */}
-        <button className="hidden md:inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg">
-          Connect Wallet
-        </button>
+        {isMounted && (
+          <div className="hidden md:inline-block">
+            <WalletMultiButton
+              style={{ backgroundColor: '#16a34a', color: 'white' }}
+            />
+          </div>
+        )}
 
         {/* Mobile Menu Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden text-gray-700 focus:outline-none"
         >
-          <svg
-            className="w-6 h-6"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d={isOpen ? 'M6 18L18 6M6 6l12 12' : 'M4 6h16M4 12h16M4 18h16'}
-            />
-          </svg>
+          {isOpen ? (
+            <FaTimes className="w-6 h-6" />
+          ) : (
+            <FaBars className="w-6 h-6" />
+          )}
         </button>
       </div>
 
@@ -62,19 +65,23 @@ export default function Header() {
           <div className="container mx-auto px-6 space-y-4">
             <Link
               href="/account"
-              className="text-gray-700 hover:text-green-600 transition duration-300"
+              className="text-gray-700 hover:text-green-600 flex items-center space-x-2 transition duration-300"
             >
-              Account
+              <FaUserCircle />
+              <span>Account</span>
             </Link>
             <Link
               href="/create"
-              className="text-gray-700 hover:text-green-600 transition duration-300"
+              className="text-gray-700 hover:text-green-600 flex items-center space-x-2 transition duration-300"
             >
-              Create
+              <FaPlusCircle />
+              <span>Create</span>
             </Link>
-            <button className="hidden md:inline-block bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg">
-              Connect Wallet
-            </button>
+            {isMounted && (
+              <WalletMultiButton
+                style={{ backgroundColor: '#16a34a', color: 'white' }}
+              />
+            )}
           </div>
         </nav>
       )}
