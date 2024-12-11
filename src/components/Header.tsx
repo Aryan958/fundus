@@ -7,7 +7,7 @@ export default function Header() {
 
   return (
     <header className="bg-white shadow-md fixed w-full top-0 z-50">
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="text-2xl font-bold text-green-600">
           Fundus<span className="text-gray-700">Crowd</span>
@@ -19,7 +19,7 @@ export default function Header() {
             href="/account"
             className="text-gray-700 hover:text-green-600 transition duration-300"
           >
-            Campaigns
+            Account
           </Link>
           <Link
             href="/create"
@@ -64,7 +64,7 @@ export default function Header() {
               href="/account"
               className="text-gray-700 hover:text-green-600 transition duration-300"
             >
-              Campaigns
+              Account
             </Link>
             <Link
               href="/create"

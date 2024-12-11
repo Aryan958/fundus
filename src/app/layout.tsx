@@ -14,10 +14,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>
+      <body className='bg-white'>
         <ReactQueryProvider>
           <Header />
-          <main className='min-h-screen bg-white'>
+          <main className='max-w-6xl mx-auto min-h-screen bg-white'>
             <div className=' h-24'/>
             {children}
             <div className=' h-24'/>
