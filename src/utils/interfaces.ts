@@ -17,3 +17,9 @@ export interface Contribution {
   cid: number
   amount: number
 }
+
+export interface Withdrawal {
+  creatorAddress: string
+  cid: number
+  amount: number
+}

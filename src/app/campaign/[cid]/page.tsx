@@ -1,23 +1,33 @@
 'use client'
 
-import dummyCampaigns from '@/data/campaign'
+import {
+  campaigns,
+  contributions,
+  withdrawals as dummyWithdrawals,
+} from '@/data'
 import { useEffect, useState } from 'react'
-import { Campaign } from '@/utils/interfaces'
+import { Campaign, Contribution, Withdrawal } from '@/utils/interfaces'
 import { useParams } from 'next/navigation'
 import CampaignDetails from '@/components/CampaignDetails'
 import CampaignDonate from '@/components/CampaignDonate'
 import DonationsList from '@/components/DonationsList'
+import WithdrawalList from '@/components/WithdrawalList'
+import Image from 'next/image'
 
 export default function CampaignPage() {
   const { cid } = useParams()
 
   const [campaign, setCampaign] = useState<Campaign | null>(null)
+  const [donations, setDonations] = useState<Contribution[]>([])
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([])
   const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     if (cid) {
       // Here, you might want to filter or find the campaign based on cid instead of just setting the first one.
-      setCampaign(dummyCampaigns.find((c) => c.cid === Number(cid)) || null)
+      setCampaign(campaigns.find((c) => c.cid === Number(cid)) || null)
+      setDonations(contributions)
+      setWithdrawals(dummyWithdrawals)
     }
     setLoaded(true)
   }, [cid])
@@ -29,12 +39,14 @@ export default function CampaignPage() {
 
   return (
     <div className="container mx-auto p-6">
-      <div className="bg-gray-100 min-h-screen">
+      <div className="bg-gray-100 pb-10">
         {/* Hero Section */}
         <div className="relative">
-          <img
-            src={campaign.imageUrl} // Assuming 'bannerImage' is not in the interface; changed to 'imageUrl'
+          <Image
+            src={campaign.imageUrl}
             alt={campaign.title}
+            width={1920} // Adjust this to match your image dimensions
+            height={1080} // Adjust this to match your image dimensions
             className="w-full h-64 object-cover"
           />
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
@@ -47,16 +59,13 @@ export default function CampaignPage() {
         {/* Main Content */}
         <div className="container mx-auto px-6 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {/* Campaign Details */}
             <CampaignDetails campaign={campaign} />
-
-            {/* Donation Section */}
-            <CampaignDonate />
+            <CampaignDonate campaign={campaign} />
           </div>
-
-          <DonationsList donations={[]} />
         </div>
       </div>
+      <DonationsList donations={donations} />
+      <WithdrawalList withdrawals={withdrawals} />
     </div>
   )
 }

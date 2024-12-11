@@ -1,4 +1,5 @@
 import { Campaign } from '@/utils/interfaces'
+import Image from 'next/image'
 import Link from 'next/link'
 import React from 'react'
 
@@ -10,11 +11,14 @@ const CampaignCard: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
 
   return (
     <div className="max-w-sm bg-white border border-gray-200 rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition-shadow duration-300">
-      <img
-        className="w-full h-48 object-cover"
+      <Image
         src={campaign.imageUrl}
         alt={`${campaign.title} campaign`}
+        width={300}
+        height={150}
+        className="w-full h-48 object-cover"
       />
+
       <div className="p-6">
         <h2 className="text-xl font-bold text-gray-800 truncate">
           {campaign.title}

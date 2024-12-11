@@ -1,3 +1,4 @@
+import { truncateAddress } from '@/utils/helper'
 import { Campaign } from '@/utils/interfaces'
 import React from 'react'
 
@@ -32,7 +33,7 @@ const CampaignDetails: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
       <div className="mt-8">
         <h3 className="text-lg font-bold text-gray-800 mb-2">Created by</h3>
         <div className="flex items-center space-x-4">
-          <p className="text-gray-800 font-semibold">{campaign?.creator}</p>
+          <p className="text-gray-800 font-semibold">{truncateAddress(campaign?.creator)}</p>
         </div>
       </div>
     </div>

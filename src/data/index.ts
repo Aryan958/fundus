@@ -1,6 +1,6 @@
-import { Campaign } from '@/utils/interfaces'
+import { Campaign, Contribution, Withdrawal } from '@/utils/interfaces'
 
-const dummyCampaigns: Campaign[] = [
+export const campaigns: Campaign[] = [
   {
     cid: 1,
     creator: '0x1234567890abcdef',
@@ -68,4 +68,58 @@ const dummyCampaigns: Campaign[] = [
   },
 ]
 
-export default dummyCampaigns
+export const contributions: Contribution[] = [
+  {
+    donorAddress: '0x1234567890123456789012345678901234567890',
+    cid: 1,
+    amount: 100,
+  },
+  {
+    donorAddress: '0x9876543210987654321098765432109876543210',
+    cid: 2,
+    amount: 50,
+  },
+  {
+    donorAddress: '0x11111111111111111111111111111111111111',
+    cid: 3,
+    amount: 75,
+  },
+  {
+    donorAddress: '0x22222222222222222222222222222222222222',
+    cid: 4,
+    amount: 25,
+  },
+  {
+    donorAddress: '0x33333333333333333333333333333333333333',
+    cid: 5,
+    amount: 150,
+  },
+]
+
+export const withdrawals: Withdrawal[] = [
+  {
+    creatorAddress: '0x9876543210987654321098765432109876543210',
+    cid: 1,
+    amount: 50,
+  },
+  {
+    creatorAddress: '0x11111111111111111111111111111111111111',
+    cid: 2,
+    amount: 75,
+  },
+  {
+    creatorAddress: '0x22222222222222222222222222222222222222',
+    cid: 3,
+    amount: 25,
+  },
+  {
+    creatorAddress: '0x33333333333333333333333333333333333333',
+    cid: 4,
+    amount: 150,
+  },
+  {
+    creatorAddress: '0x44444444444444444444444444444444444444',
+    cid: 5,
+    amount: 100,
+  },
+]

@@ -18,3 +18,7 @@ body {
 .wallet-adapter-button {
     font-family: inherit !important;
 }
+
+input, textarea {
+    background-color: transparent;
+}
