@@ -2,7 +2,6 @@
 
 import { createCampaign, getProvider } from '@/services/blockchain'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { title } from 'process'
 import { FormEvent, useMemo, useState } from 'react'
 import { toast } from 'react-toastify'
 
@@ -105,7 +104,10 @@ export default function Page() {
         />
         <button
           type="submit"
-          className="mt-4 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg"
+          className={`mt-4 bg-green-600 hover:bg-green-700
+          text-white font-semibold py-2 px-4 rounded-lg ${
+            !form ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
         >
           Create Now
         </button>

@@ -7,10 +7,12 @@ import {
 } from '@solana/web3.js'
 import idl from '../../anchor/target/idl/fundus.json'
 import { Fundus } from '../../anchor/target/types/fundus'
-import { Campaign } from '@/utils/interfaces'
+import { Campaign, Transaction } from '@/utils/interfaces'
+import { globalActions } from '@/store/globalSlices'
+import { store } from '@/store'
 
-let tx
-// const programId = new PublicKey(idl.address)
+let tx: any
+const { setCampaign, setDonations } = globalActions
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8899'
 
 export const getProvider = (
@@ -94,6 +96,47 @@ export const createCampaign = async (
   return tx
 }
 
+export const donateToCampaign = async (
+  program: Program<Fundus>,
+  publicKey: PublicKey,
+  pda: string,
+  amount: number
+): Promise<TransactionSignature | any> => {
+  try {
+    const campaign = await program.account.campaign.fetch(pda)
+
+    const [contributionPda] = PublicKey.findProgramAddressSync(
+      [
+        Buffer.from('donor'),
+        publicKey.toBuffer(),
+        campaign.cid.toArrayLike(Buffer, 'le', 8),
+        campaign.donors.add(new BN(1)).toArrayLike(Buffer, 'le', 8),
+      ],
+      program.programId
+    )
+
+    tx = await program.methods
+      .donate(campaign.cid, new BN(Math.round(amount * 1_000_000_000)))
+      .accountsPartial({
+        donor: publicKey,
+        campaign: pda,
+        contribution: contributionPda,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc()
+
+    const connection = new Connection(
+      program.provider.connection.rpcEndpoint,
+      'confirmed'
+    )
+    await connection.confirmTransaction(tx, 'finalized')
+
+    return tx
+  } catch (error) {
+    return error
+  }
+}
+
 export const fetchAllCampaigns = async (
   program: Program<Fundus>
 ): Promise<Campaign[]> => {
@@ -108,7 +151,7 @@ const serializedCampaign = (campaigns: any[]): Campaign[] =>
     cid: c.account.cid.toNumber(),
     creator: c.account.creator.toBase58(),
     goal: c.account.goal.toNumber(),
-    amountRaised: c.account.amountRaised.toNumber(),
+    amountRaised: c.account.amountRaised.toNumber() / 1e9,
     donors: c.account.donors.toNumber(),
     withdrawals: c.account.withdrawals.toNumber(),
     timestamp: c.account.timestamp.toNumber() * 1000,
@@ -126,10 +169,38 @@ export const fetchCampaignDetails = async (
     cid: campaign.cid.toNumber(),
     creator: campaign.creator.toBase58(),
     goal: campaign.goal.toNumber(),
-    amountRaised: campaign.amountRaised.toNumber(),
+    amountRaised: campaign.amountRaised.toNumber() / 1e9,
     donors: campaign.donors.toNumber(),
     withdrawals: campaign.withdrawals.toNumber(),
     timestamp: campaign.timestamp.toNumber() * 1000,
   }
+
+  store.dispatch(setCampaign(serialized))
   return serialized
 }
+
+export const fetchAllDonations = async (
+  program: Program<Fundus>,
+  pda: string
+): Promise<Transaction[]> => {
+  const campaign = await program.account.campaign.fetch(pda)
+
+  const transactions = await program.account.transaction.all()
+
+  const donations = transactions.filter((tx) => {
+    return tx.account.cid.eq(campaign.cid)
+  })
+
+  store.dispatch(setDonations(serializedTransactions(donations)))
+  return serializedTransactions(donations)
+}
+
+const serializedTransactions = (transactions: any[]): Transaction[] =>
+  transactions.map((c: any) => ({
+    ...c.account,
+    publicKey: c.publicKey.toBase58(), // Convert to string
+    cid: c.account.cid.toNumber(),
+    owner: c.account.owner.toBase58(),
+    amount: c.account.amount.toNumber() / 1e9,
+    timestamp: c.account.timestamp.toNumber() * 1000,
+  }))

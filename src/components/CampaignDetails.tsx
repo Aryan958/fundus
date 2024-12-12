@@ -27,7 +27,7 @@ const CampaignDetails: React.FC<{ campaign: Campaign }> = ({ campaign }) => {
         </div>
         <p className="mt-2 text-gray-700">
           {campaign?.amountRaised.toLocaleString()} SOL raised of{' '}
-          {campaign?.goal.toLocaleString()} SOL
+          {campaign?.goal.toLocaleString()} SOL at {campaign?.donors} donations
         </p>
       </div>
 

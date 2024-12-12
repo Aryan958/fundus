@@ -1,12 +1,7 @@
 'use client'
 
-import {
-  campaigns,
-  contributions,
-  withdrawals as dummyWithdrawals,
-} from '@/data'
-import { useEffect, useMemo, useState } from 'react'
-import { Campaign, Transaction } from '@/utils/interfaces'
+import React, { useEffect, useMemo, useState } from 'react'
+import { RootState, Transaction } from '@/utils/interfaces'
 import { useParams } from 'next/navigation'
 import CampaignDetails from '@/components/CampaignDetails'
 import CampaignDonate from '@/components/CampaignDonate'
@@ -14,17 +9,21 @@ import DonationsList from '@/components/DonationsList'
 import WithdrawalList from '@/components/WithdrawalList'
 import Image from 'next/image'
 import {
+  fetchAllDonations,
   fetchCampaignDetails,
   getReadonlyProvider,
 } from '@/services/blockchain'
+import { useSelector } from 'react-redux'
 
 export default function CampaignPage() {
   const { cid } = useParams()
 
-  const [campaign, setCampaign] = useState<Campaign | null>(null)
-  const [donations, setDonations] = useState<Transaction[]>([])
   const [withdrawals, setWithdrawals] = useState<Transaction[]>([])
   const [loaded, setLoaded] = useState(false)
+
+  const { campaign, donations } = useSelector(
+    (states: RootState) => states.globalStates
+  )
 
   const program = useMemo(() => getReadonlyProvider(), [])
 
@@ -32,8 +31,8 @@ export default function CampaignPage() {
     if (cid) {
       // Here, you might want to filter or find the campaign based on cid instead of just setting the first one.
       const fetchDetails = async () => {
-        const data = await fetchCampaignDetails(program!, cid as string)
-        setCampaign(data)
+        await fetchCampaignDetails(program!, cid as string)
+        await fetchAllDonations(program!, cid as string)
       }
 
       fetchDetails()
@@ -69,7 +68,7 @@ export default function CampaignPage() {
         <div className="container mx-auto px-6 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <CampaignDetails campaign={campaign} />
-            <CampaignDonate campaign={campaign} />
+            <CampaignDonate campaign={campaign} pda={cid as string} />
           </div>
         </div>
       </div>

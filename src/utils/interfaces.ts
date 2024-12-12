@@ -14,8 +14,20 @@ export interface Campaign {
 }
 
 export interface Transaction {
+  publicKey: string
   owner: string
   cid: number
   amount: number
   timestamp: number
+}
+
+export interface GlobalState {
+  campaign: Campaign | null
+  donations: Transaction[]
+  withdrawals: Transaction[]
+  delModal: string
+}
+
+export interface RootState {
+  globalStates: GlobalState
 }
