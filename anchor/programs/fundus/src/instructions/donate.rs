@@ -15,6 +15,10 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
     if amount < 1_000_000_000 {
         return Err(InvalidDonationAmount.into());
     }
+    
+    if campaign.amount_raised >= campaign.goal {
+        return Err(CampaignGoalActualized.into());
+    }
 
     // Transfer lamports from the donor to the campaign
     let tx_instruction = anchor_lang::solana_program::system_instruction::transfer(

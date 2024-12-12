@@ -30,4 +30,6 @@ pub enum ErrorCode {
     CampaignNotFound,
     #[msg("Campaign already received funding.")]
     CampaignAlreadyFunded,
+    #[msg("Campaign goal reached.")]
+    CampaignGoalActualized,
 }

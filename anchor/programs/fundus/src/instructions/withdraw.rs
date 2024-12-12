@@ -47,7 +47,7 @@ pub fn withdraw(ctx: Context<WithdrawCtx>, cid: u64, amount: u64) -> Result<()> 
     **campaign.to_account_info().try_borrow_mut_lamports()? -= platform_fee;
     **platform_account_info.try_borrow_mut_lamports()? += platform_fee;
 
-    campaign.amount_raised -= amount;
+    // campaign.amount_raised -= amount;
     campaign.withdrawals += 1;
 
     withdrawal.amount = amount;
