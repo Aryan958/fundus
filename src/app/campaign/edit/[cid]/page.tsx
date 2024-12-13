@@ -1,93 +1,31 @@
 'use client'
 
-import {
-  fetchCampaignDetails,
-  getProvider,
-  getReadonlyProvider,
-  updateCampaign,
-} from '@/services/blockchain'
-import { RootState } from '@/utils/interfaces'
-import { useWallet } from '@solana/wallet-adapter-react'
-import Link from 'next/link'
 import { useParams } from 'next/navigation'
-import { FormEvent, useEffect, useMemo, useState } from 'react'
-import { useSelector } from 'react-redux'
-import { toast } from 'react-toastify'
+import { useState } from 'react'
+import { campaigns } from '@/data'
+import Link from 'next/link'
 
 export default function Page() {
   const { cid } = useParams()
-  const [loaded, setLoaded] = useState(false)
-  const { publicKey, sendTransaction, signTransaction } = useWallet()
 
-  const { campaign } = useSelector((states: RootState) => states.globalStates)
+  // Static data: Find the campaign using `cid`
+  const campaign = campaigns.find((c) => c.publicKey === (cid as string))
 
+  // Local form state
   const [form, setForm] = useState({
-    title: '',
-    description: '',
-    image_url: '',
-    goal: '',
+    title: campaign?.title || '',
+    description: campaign?.description || '',
+    image_url: campaign?.imageUrl || '',
+    goal: campaign?.goal || '',
   })
 
-  const programReadonly = useMemo(() => getReadonlyProvider(), [])
-
-  useEffect(() => {
-    if (cid) {
-      const fetchDetails = async () => {
-        const campaignData = await fetchCampaignDetails(
-          programReadonly!,
-          cid as string
-        )
-        form.title = campaignData.title
-        form.description = campaignData.description
-        form.image_url = campaignData.imageUrl
-        form.goal = campaignData.goal.toString()
-      }
-
-      fetchDetails()
-    }
-    setLoaded(true)
-  }, [cid])
-
-  const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
-  )
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { title, description, image_url, goal } = form
-
-    await toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          const tx = await updateCampaign(
-            program!,
-            publicKey!,
-            cid as string,
-            title,
-            description,
-            image_url,
-            Number(goal)
-          )
-
-          console.log(tx)
-          resolve(tx as any)
-        } catch (error) {
-          console.error('Transaction failed:', error)
-          reject(error)
-        }
-      }),
-      {
-        pending: 'Approve transaction...',
-        success: 'Transaction successful 👌',
-        error: 'Encountered error 🤯',
-      }
-    )
+    console.log('Form Submitted:', form)
+    alert('Campaign updated successfully!')
   }
 
-  if (!loaded) return <h4>Loading...</h4>
-
-  // Conditional rendering based on whether campaign exists
+  // Fallback if campaign not found
   if (!campaign) return <h4>Campaign not found</h4>
 
   return (
@@ -125,7 +63,6 @@ export default function Page() {
           className="w-full p-2 border rounded text-black"
           required
         />
-
         <textarea
           placeholder="Tell us the epic tale of your project..."
           maxLength={512}
@@ -138,10 +75,7 @@ export default function Page() {
         <div className="mt-4 space-x-4 flex justify-start items-center">
           <button
             type="submit"
-            className={`bg-green-600 hover:bg-green-700
-              text-white font-semibold py-2 px-4 rounded-lg ${
-                !form || !publicKey ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg"
           >
             Update Now
           </button>

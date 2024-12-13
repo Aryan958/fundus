@@ -1,50 +1,21 @@
-import {
-  fetchProgramState,
-  getProvider,
-  updatePlatform,
-} from '@/services/blockchain'
 import { ProgramState } from '@/utils/interfaces'
-import { useWallet } from '@solana/wallet-adapter-react'
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { FaDonate } from 'react-icons/fa'
-import { toast } from 'react-toastify'
 
 const AccountDetails: React.FC<{ programState: ProgramState }> = ({
   programState,
 }) => {
   const [percent, setPercent] = useState('')
-  const { publicKey, sendTransaction, signTransaction } = useWallet()
 
-  const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
-  )
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!program || !publicKey || !percent) return
-    
-    await toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          const tx = await updatePlatform(program!, publicKey!, Number(percent))
 
-          setPercent('')
-          await fetchProgramState(program)
+    if (!percent) return
 
-          console.log(tx)
-          resolve(tx as any)
-        } catch (error) {
-          console.error('Transaction failed:', error)
-          reject(error)
-        }
-      }),
-      {
-        pending: 'Approve transaction...',
-        success: 'Transaction successful 👌',
-        error: 'Encountered error 🤯',
-      }
-    )
+    // Simulate an update transaction
+    console.log(`Service fee updated to ${percent}%`)
+    setPercent('')
+    alert(`Service fee successfully updated to ${percent}%`)
   }
 
   return (
@@ -59,7 +30,7 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
             htmlFor="donationAmount"
             className="block text-gray-700 font-semibold mb-2"
           >
-            Percentage range are (1 - 15%)
+            Percentage range is (1 - 15%)
           </label>
           <input
             type="text"
@@ -78,7 +49,7 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
           <button
             type="submit"
             className={`mt-4 w-full bg-green-600 hover:bg-green-700 ${
-              !percent || !publicKey ? 'opacity-50 cursor-not-allowed' : ''
+              !percent ? 'opacity-50 cursor-not-allowed' : ''
             } text-white font-semibold py-2 px-4 rounded-lg flex items-center
               justify-center gap-2`}
           >

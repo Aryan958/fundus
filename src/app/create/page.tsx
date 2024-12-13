@@ -1,13 +1,9 @@
 'use client'
 
-import { createCampaign, getProvider } from '@/services/blockchain'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { FormEvent, useMemo, useState } from 'react'
-import { toast } from 'react-toastify'
+import { useState } from 'react'
 
 export default function Page() {
-  const { publicKey, sendTransaction, signTransaction } = useWallet()
-
+  // Local form state
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -15,52 +11,15 @@ export default function Page() {
     goal: '',
   })
 
-  const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
-  )
-
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    const { title, description, image_url, goal } = form
-
-    await toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          const tx = await createCampaign(
-            program!,
-            publicKey!,
-            title,
-            description,
-            image_url,
-            Number(goal)
-          )
-
-          setForm({
-            title: '',
-            description: '',
-            image_url: '',
-            goal: '',
-          })
-
-          console.log(tx)
-          resolve(tx as any)
-        } catch (error) {
-          console.error('Transaction failed:', error)
-          reject(error)
-        }
-      }),
-      {
-        pending: 'Approve transaction...',
-        success: 'Transaction successful 👌',
-        error: 'Encountered error 🤯',
-      }
-    )
+    console.log('Form Submitted:', form)
+    alert('Campaign created successfully!')
   }
 
   return (
     <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-bold mb-6">Create a New Campaign</h1>
+      <h1 className="text-3xl font-bold mb-6">Create Campaign</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input
           type="text"
@@ -93,7 +52,6 @@ export default function Page() {
           className="w-full p-2 border rounded text-black"
           required
         />
-
         <textarea
           placeholder="Tell us the epic tale of your project..."
           maxLength={512}
@@ -102,15 +60,15 @@ export default function Page() {
           className="w-full p-2 border rounded text-black"
           required
         />
-        <button
-          type="submit"
-          className={`mt-4 bg-green-600 hover:bg-green-700
-          text-white font-semibold py-2 px-4 rounded-lg ${
-            !form || !publicKey ? 'opacity-50 cursor-not-allowed' : ''
-          }`}
-        >
-          Create Now
-        </button>
+
+        <div className="mt-4 space-x-4 flex justify-start items-center">
+          <button
+            type="submit"
+            className="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg"
+          >
+            Create Now
+          </button>
+        </div>
       </form>
     </div>
   )

@@ -1,7 +1,8 @@
-import { Campaign, Contribution, Withdrawal } from '@/utils/interfaces'
+import { Campaign, ProgramState, Transaction } from '@/utils/interfaces'
 
 export const campaigns: Campaign[] = [
   {
+    publicKey: '0x1234567890abcdef',
     cid: 1,
     creator: '0x1234567890abcdef',
     title: 'Save the Whales',
@@ -12,9 +13,11 @@ export const campaigns: Campaign[] = [
     timestamp: Date.now(),
     donors: 123,
     withdrawals: 2,
+    balance: 5600 - 10000,
     active: true,
   },
   {
+    publicKey: '0x9876543210fedcba',
     cid: 2,
     creator: '0x9876543210fedcba',
     title: 'Solar for Schools',
@@ -22,12 +25,14 @@ export const campaigns: Campaign[] = [
     imageUrl: 'https://dummyjson.com/image/400x200/282828',
     goal: 50000,
     amountRaised: 23456,
-    timestamp: Date.now() - 86400000, // A day ago
+    timestamp: Date.now() - 86400000,
     donors: 456,
     withdrawals: 1,
+    balance: 23456 - 50000,
     active: true,
   },
   {
+    publicKey: '0x5555555555555555',
     cid: 3,
     creator: '0x5555555555555555',
     title: 'Art for All',
@@ -35,12 +40,14 @@ export const campaigns: Campaign[] = [
     imageUrl: 'https://dummyjson.com/image/400x200/282828',
     goal: 15000,
     amountRaised: 14999,
-    timestamp: Date.now() - 86400000 * 7, // A week ago
+    timestamp: Date.now() - 86400000 * 7,
     donors: 789,
     withdrawals: 3,
+    balance: 14999 - 15000,
     active: false,
   },
   {
+    publicKey: '0xaaaaaaaabbbbbbbb',
     cid: 4,
     creator: '0xaaaaaaaabbbbbbbb',
     title: 'Books for Kids',
@@ -48,12 +55,14 @@ export const campaigns: Campaign[] = [
     imageUrl: 'https://dummyjson.com/image/400x200/282828',
     goal: 8000,
     amountRaised: 7980,
-    timestamp: Date.now() - 86400000 * 30, // A month ago
+    timestamp: Date.now() - 86400000 * 30,
     donors: 321,
     withdrawals: 0,
+    balance: 7980 - 8000,
     active: true,
   },
   {
+    publicKey: '0xcccdddddeeeeefff',
     cid: 5,
     creator: '0xcccdddddeeeeefff',
     title: 'Clean Water Initiative',
@@ -61,65 +70,52 @@ export const campaigns: Campaign[] = [
     imageUrl: 'https://dummyjson.com/image/400x200/282828',
     goal: 20000,
     amountRaised: 10000,
-    timestamp: Date.now() - 86400000 * 90, // 3 months ago
+    timestamp: Date.now() - 86400000 * 90,
     donors: 654,
     withdrawals: 2,
+    balance: 10000 - 20000,
     active: true,
   },
 ]
 
-export const contributions: Contribution[] = [
+export const dummyTransactions: Transaction[] = [
   {
-    donorAddress: '0x1234567890123456789012345678901234567890',
+    publicKey: 'TransactionPublicKey1',
+    owner: 'DonorAddress1',
     cid: 1,
     amount: 100,
+    timestamp: Date.now() - 86400000, // 1 day ago
+    credited: true, // Donation
   },
   {
-    donorAddress: '0x9876543210987654321098765432109876543210',
-    cid: 2,
-    amount: 50,
+    publicKey: 'TransactionPublicKey2',
+    owner: 'DonorAddress2',
+    cid: 1,
+    amount: 200,
+    timestamp: Date.now() - 43200000, // 12 hours ago
+    credited: true, // Donation
   },
   {
-    donorAddress: '0x11111111111111111111111111111111111111',
-    cid: 3,
-    amount: 75,
+    publicKey: 'TransactionPublicKey3',
+    owner: 'OwnerAddress1',
+    cid: 1,
+    amount: 300,
+    timestamp: Date.now() - 21600000, // 6 hours ago
+    credited: false, // Withdrawal
   },
   {
-    donorAddress: '0x22222222222222222222222222222222222222',
-    cid: 4,
-    amount: 25,
-  },
-  {
-    donorAddress: '0x33333333333333333333333333333333333333',
-    cid: 5,
-    amount: 150,
+    publicKey: 'TransactionPublicKey4',
+    owner: 'OwnerAddress2',
+    cid: 1,
+    amount: 100,
+    timestamp: Date.now() - 10800000, // 3 hours ago
+    credited: false, // Withdrawal
   },
 ]
 
-export const withdrawals: Withdrawal[] = [
-  {
-    creatorAddress: '0x9876543210987654321098765432109876543210',
-    cid: 1,
-    amount: 50,
-  },
-  {
-    creatorAddress: '0x11111111111111111111111111111111111111',
-    cid: 2,
-    amount: 75,
-  },
-  {
-    creatorAddress: '0x22222222222222222222222222222222222222',
-    cid: 3,
-    amount: 25,
-  },
-  {
-    creatorAddress: '0x33333333333333333333333333333333333333',
-    cid: 4,
-    amount: 150,
-  },
-  {
-    creatorAddress: '0x44444444444444444444444444444444444444',
-    cid: 5,
-    amount: 100,
-  },
-]
+export const dummyProgramState: ProgramState = {
+  initialized: true,
+  campaignCount: 50,
+  platformFee: 5,
+  platformAddress: '0x1234567890abcdef',
+}

@@ -1,77 +1,27 @@
-import React, { useMemo, useState } from 'react'
+import React, { useState } from 'react'
 import { FaTimes } from 'react-icons/fa'
-import { globalActions } from '../store/globalSlices'
-import { useDispatch, useSelector } from 'react-redux'
-import { Campaign, RootState } from '../utils/interfaces'
-import {
-  fetchAllWithdrawals,
-  fetchCampaignDetails,
-  getProvider,
-  withdrawFromCampaign,
-} from '../services/blockchain'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { toast } from 'react-toastify'
 
 const WithdrawModal = ({
   campaign,
-  pda,
 }: {
-  campaign: Campaign
-  pda: string
+  campaign: { title: string; balance: number }
 }) => {
-  const { publicKey, sendTransaction, signTransaction } = useWallet()
   const [amount, setAmount] = useState('')
-
-  const dispatch = useDispatch()
-  const { setWithdrawModal } = globalActions
-  const { withdrawModal } = useSelector(
-    (states: RootState) => states.globalStates
-  )
-
-  const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
-  )
+  const withModal = 'scale-0'
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!program || !publicKey || !amount) return
+    if (!amount) return
 
-    await toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          const tx = await withdrawFromCampaign(
-            program!,
-            publicKey!,
-            pda,
-            Number(amount)
-          )
-
-          setAmount('')
-          dispatch(setWithdrawModal('scale-0'))
-
-          await fetchCampaignDetails(program!, pda)
-          await fetchAllWithdrawals(program!, pda)
-
-          console.log(tx)
-          resolve(tx as any)
-        } catch (error) {
-          console.error('Transaction failed:', error)
-          reject(error)
-        }
-      }),
-      {
-        pending: 'Approve transaction...',
-        success: 'Transaction successful 👌',
-        error: 'Encountered error 🤯',
-      }
-    )
+    // Simulate a withdrawal (static)
+    console.log('Withdrawal Successful')
+    setAmount('')
   }
 
   return (
     <div
       className={`fixed top-0 left-0 w-screen h-screen flex items-center justify-center
-      bg-black bg-opacity-50 transform z-[3000] transition-transform duration-300 ${withdrawModal}`}
+      bg-black bg-opacity-50 transform z-[3000] transition-transform duration-300 ${withModal}`}
     >
       <div className="bg-white shadow-lg shadow-slate-900 rounded-xl w-11/12 md:w-2/5 h-7/12 p-6">
         <form className="space-y-6" onSubmit={handleSubmit}>
@@ -82,7 +32,7 @@ const WithdrawModal = ({
             <button
               type="button"
               className="border-0 bg-transparent focus:outline-none"
-              onClick={() => dispatch(setWithdrawModal('scale-0'))}
+              onClick={() => {}}
             >
               <FaTimes className="text-gray-400" />
             </button>
@@ -111,9 +61,9 @@ const WithdrawModal = ({
           <div className="flex justify-center w-full">
             <button
               type="submit"
-              disabled={!program || !publicKey}
+              disabled={!amount}
               className={`w-full bg-green-600 hover:bg-green-700 ${
-                !amount || !publicKey ? 'opacity-50 cursor-not-allowed' : ''
+                !amount ? 'opacity-50 cursor-not-allowed' : ''
               } text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2`}
             >
               Withdraw

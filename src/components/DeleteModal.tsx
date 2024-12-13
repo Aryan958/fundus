@@ -1,59 +1,16 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { FaTimes, FaTrashAlt } from 'react-icons/fa'
-import { useDispatch, useSelector } from 'react-redux'
-import { globalActions } from '../store/globalSlices'
-import { Campaign, RootState } from '@/utils/interfaces'
-import {
-  deleteCampaign,
-  fetchCampaignDetails,
-  getProvider,
-} from '@/services/blockchain'
-import { toast } from 'react-toastify'
-import { useWallet } from '@solana/wallet-adapter-react'
 
-const DeleteModal = ({
-  campaign,
-  pda,
-}: {
-  campaign: Campaign
-  pda: string
-}) => {
-  const dispatch = useDispatch()
-  const { setDelModal } = globalActions
-  const { publicKey, sendTransaction, signTransaction } = useWallet()
-  const { delModal } = useSelector((states: RootState) => states.globalStates)
-
-  const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
-  )
-
+const DeleteModal = () => {
+  const delModal = 'scale-0'
   const handleClose = () => {
-    dispatch(setDelModal('scale-0'))
+    // Close the modal functionality (static, no Redux)
   }
 
   const handleDelete = async () => {
-    await toast.promise(
-      new Promise<void>(async (resolve, reject) => {
-        try {
-          const tx = await deleteCampaign(program!, publicKey!, pda)
-          handleClose()
-
-          await fetchCampaignDetails(program!, pda)
-
-          console.log(tx)
-          resolve(tx as any)
-        } catch (error) {
-          console.error('Transaction failed:', error)
-          reject(error)
-        }
-      }),
-      {
-        pending: 'Approve transaction...',
-        success: 'Transaction successful 👌',
-        error: 'Encountered error 🤯',
-      }
-    )
+    // Simulate successful deletion (static, no actual API call)
+    console.log('Campaign deleted')
+    handleClose()
   }
 
   return (
@@ -78,7 +35,7 @@ const DeleteModal = ({
         <div className="mb-6 text-center">
           <p className="text-lg text-gray-600">
             You are about to permanently delete the campaign{' '}
-            <strong>{campaign.title}</strong>.
+            <strong>Sample Campaign</strong>.
           </p>
           <p className="text-sm text-gray-500">This action cannot be undone.</p>
         </div>
