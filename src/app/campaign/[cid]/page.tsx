@@ -43,8 +43,6 @@ export default function CampaignPage() {
   }, [program, cid])
 
   if (!loaded) return <h4>Loading...</h4>
-
-  // Conditional rendering based on whether campaign exists
   if (!campaign) return <h4>Campaign not found</h4>
 
   return (

@@ -113,7 +113,7 @@ const WithdrawModal = ({
               type="submit"
               disabled={!program || !publicKey}
               className={`w-full bg-green-600 hover:bg-green-700 ${
-                !amount ? 'opacity-50 cursor-not-allowed' : ''
+                !amount || !publicKey ? 'opacity-50 cursor-not-allowed' : ''
               } text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2`}
             >
               Withdraw

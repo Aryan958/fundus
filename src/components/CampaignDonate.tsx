@@ -70,14 +70,14 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
       <div className="bg-white shadow-lg rounded-lg p-6">
         <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
           <FaDonate className="text-green-600" />
-          Make a Donation
+          Donate
         </h2>
         <form onSubmit={handleSubmit}>
           <label
             htmlFor="donationAmount"
             className="block text-gray-700 font-semibold mb-2"
           >
-            Donation Amount (SOL)
+            Amount (SOL)
           </label>
           <input
             type="text"
@@ -119,12 +119,12 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
         </form>
 
         {publicKey && publicKey.toBase58() == campaign.creator && (
-          <div className="mt-6 flex justify-between">
+          <div className="mt-6 flex flex-wrap gap-2 md:flex-nowrap md:gap-0">
             <Link
               href={`/campaign/edit/${pda}`}
               className="bg-transparent hover:bg-green-600 text-green-600 hover:text-white
-            font-semibold py-2 px-4 rounded-l-lg flex items-center justify-center
-            w-full border border-green-600 hover:border-transparent"
+              font-semibold py-2 px-4 flex-1 md:rounded-l-lg flex items-center justify-center
+              border border-green-600 hover:border-transparent"
             >
               <FaEdit />
               Edit
@@ -132,8 +132,7 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
             <button
               type="button"
               className="bg-green-600 hover:bg-green-700 text-white
-            font-semibold py-2 px-4
-            rounded-0 flex items-center justify-center w-full"
+              font-semibold py-2 px-4 flex-1 flex items-center justify-center"
               onClick={() => dispatch(setDelModal('scale-100'))}
             >
               <FaTrashAlt />
@@ -142,8 +141,8 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
 
             <button
               className="bg-transparent hover:bg-green-600 text-green-600 hover:text-white
-            font-semibold py-2 px-4 rounded-r-lg flex items-center justify-center
-            w-full border border-green-600 hover:border-transparent"
+              font-semibold py-2 px-4 flex-1 md:rounded-r-lg flex items-center justify-center
+              border border-green-600 hover:border-transparent"
               onClick={() => dispatch(setWithdrawModal('scale-100'))}
             >
               <FaDollarSign />

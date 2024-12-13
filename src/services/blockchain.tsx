@@ -7,12 +7,12 @@ import {
 } from '@solana/web3.js'
 import idl from '../../anchor/target/idl/fundus.json'
 import { Fundus } from '../../anchor/target/types/fundus'
-import { Campaign, Transaction } from '@/utils/interfaces'
+import { Campaign, ProgramState, Transaction } from '@/utils/interfaces'
 import { globalActions } from '@/store/globalSlices'
 import { store } from '@/store'
 
 let tx: any
-const { setCampaign, setDonations, setWithdrawals } = globalActions
+const { setCampaign, setDonations, setWithdrawals, setStates } = globalActions
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'http://127.0.0.1:8899'
 
 export const getProvider = (
@@ -250,6 +250,33 @@ export const withdrawFromCampaign = async (
   }
 }
 
+export const updatePlatform = async (
+  program: Program<Fundus>,
+  publicKey: PublicKey,
+  percent: number
+): Promise<TransactionSignature> => {
+  const [programStatePda] = PublicKey.findProgramAddressSync(
+    [Buffer.from('program_state')],
+    program.programId
+  )
+
+  tx = await program.methods
+    .updatePlatformSettings(new BN(percent))
+    .accountsPartial({
+      updater: publicKey,
+      programState: programStatePda,
+    })
+    .rpc()
+
+  const connection = new Connection(
+    program.provider.connection.rpcEndpoint,
+    'confirmed'
+  )
+  await connection.confirmTransaction(tx, 'finalized')
+
+  return tx
+}
+
 export const fetchUserCampaigns = async (
   program: Program<Fundus>,
   publicKey: PublicKey
@@ -259,6 +286,27 @@ export const fetchUserCampaigns = async (
     (c) => c.account.creator.toBase58() == publicKey.toBase58()
   )
   return serializedCampaign(userCampaign)
+}
+
+export const fetchProgramState = async (
+  program: Program<Fundus>
+): Promise<ProgramState> => {
+  const [programStatePda] = PublicKey.findProgramAddressSync(
+    [Buffer.from('program_state')],
+    program.programId
+  )
+
+  const programState = await program.account.programState.fetch(programStatePda)
+  const serialized: ProgramState = {
+    ...programState,
+    campaignCount: programState.campaignCount.toNumber(),
+    platformFee: programState.platformFee.toNumber(),
+    platformAddress: programState.platformAddress.toBase58(),
+  }
+
+  store.dispatch(setStates(serialized))
+
+  return serialized
 }
 
 export const fetchActiveCampaigns = async (

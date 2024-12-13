@@ -23,10 +23,18 @@ export interface Transaction {
   credited: boolean
 }
 
+export interface ProgramState {
+  initialized: boolean
+  campaignCount: number
+  platformFee: number
+  platformAddress: string
+}
+
 export interface GlobalState {
   campaign: Campaign | null
   donations: Transaction[]
   withdrawals: Transaction[]
+  programState: ProgramState | null
   delModal: string
   withdrawModal: string
 }

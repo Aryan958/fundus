@@ -1,4 +1,9 @@
-import { Campaign, GlobalState, Transaction } from '@/utils/interfaces'
+import {
+  Campaign,
+  GlobalState,
+  ProgramState,
+  Transaction,
+} from '@/utils/interfaces'
 import { PayloadAction } from '@reduxjs/toolkit'
 
 export const globalActions = {
@@ -13,6 +18,9 @@ export const globalActions = {
   },
   setCampaign: (state: GlobalState, action: PayloadAction<Campaign>) => {
     state.campaign = action.payload
+  },
+  setStates: (state: GlobalState, action: PayloadAction<ProgramState>) => {
+    state.programState = action.payload
   },
   setDelModal: (state: GlobalState, action: PayloadAction<string>) => {
     state.delModal = action.payload
