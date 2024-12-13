@@ -49,11 +49,13 @@ pub fn withdraw(ctx: Context<WithdrawCtx>, cid: u64, amount: u64) -> Result<()> 
 
     // campaign.amount_raised -= amount;
     campaign.withdrawals += 1;
+    campaign.balance -= amount;
 
     withdrawal.amount = amount;
     withdrawal.cid = cid;
     withdrawal.owner = creator.key();
     withdrawal.timestamp = Clock::get()?.unix_timestamp as u64;
+    withdrawal.credited = false;
 
     Ok(())
 }
@@ -92,6 +94,7 @@ pub struct WithdrawCtx<'info> {
     pub program_state: Account<'info, ProgramState>,
 
     /// CHECK: We are passing the account to be used as the
+    #[account(mut)]
     pub platform_address: AccountInfo<'info>,
 
     pub system_program: Program<'info, System>,

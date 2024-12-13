@@ -407,7 +407,8 @@ export type Fundus = {
           "writable": true
         },
         {
-          "name": "platformAddress"
+          "name": "platformAddress",
+          "writable": true
         },
         {
           "name": "systemProgram",
@@ -537,6 +538,11 @@ export type Fundus = {
       "code": 6013,
       "name": "campaignAlreadyFunded",
       "msg": "Campaign already received funding."
+    },
+    {
+      "code": 6014,
+      "name": "campaignGoalActualized",
+      "msg": "Campaign goal reached."
     }
   ],
   "types": [
@@ -583,6 +589,10 @@ export type Fundus = {
           },
           {
             "name": "withdrawals",
+            "type": "u64"
+          },
+          {
+            "name": "balance",
             "type": "u64"
           },
           {
@@ -636,6 +646,10 @@ export type Fundus = {
           {
             "name": "timestamp",
             "type": "u64"
+          },
+          {
+            "name": "credited",
+            "type": "bool"
           }
         ]
       }

@@ -16,5 +16,6 @@ pub struct Campaign {
     pub timestamp: u64,
     pub donors: u64,
     pub withdrawals: u64,
+    pub balance: u64,
     pub active: bool,
 }

@@ -10,6 +10,7 @@ export interface Campaign {
   timestamp: number
   donors: number
   withdrawals: number
+  balance: number
   active: boolean
 }
 
@@ -19,6 +20,7 @@ export interface Transaction {
   cid: number
   amount: number
   timestamp: number
+  credited: boolean
 }
 
 export interface GlobalState {
@@ -26,6 +28,7 @@ export interface GlobalState {
   donations: Transaction[]
   withdrawals: Transaction[]
   delModal: string
+  withdrawModal: string
 }
 
 export interface RootState {

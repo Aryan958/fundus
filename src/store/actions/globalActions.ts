@@ -17,4 +17,7 @@ export const globalActions = {
   setDelModal: (state: GlobalState, action: PayloadAction<string>) => {
     state.delModal = action.payload
   },
+  setWithdrawModal: (state: GlobalState, action: PayloadAction<string>) => {
+    state.withdrawModal = action.payload
+  },
 }

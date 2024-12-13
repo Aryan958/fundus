@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { RootState, Transaction } from '@/utils/interfaces'
+import { RootState } from '@/utils/interfaces'
 import { useParams } from 'next/navigation'
 import CampaignDetails from '@/components/CampaignDetails'
 import CampaignDonate from '@/components/CampaignDonate'
@@ -10,18 +10,19 @@ import WithdrawalList from '@/components/WithdrawalList'
 import Image from 'next/image'
 import {
   fetchAllDonations,
+  fetchAllWithdrawals,
   fetchCampaignDetails,
   getReadonlyProvider,
 } from '@/services/blockchain'
 import { useSelector } from 'react-redux'
+import WithdrawModal from '@/components/WithdrawModal'
+import DeleteModal from '@/components/DeleteModal'
 
 export default function CampaignPage() {
   const { cid } = useParams()
-
-  const [withdrawals, setWithdrawals] = useState<Transaction[]>([])
   const [loaded, setLoaded] = useState(false)
 
-  const { campaign, donations } = useSelector(
+  const { campaign, donations, withdrawals } = useSelector(
     (states: RootState) => states.globalStates
   )
 
@@ -33,6 +34,7 @@ export default function CampaignPage() {
       const fetchDetails = async () => {
         await fetchCampaignDetails(program!, cid as string)
         await fetchAllDonations(program!, cid as string)
+        await fetchAllWithdrawals(program!, cid as string)
       }
 
       fetchDetails()
@@ -74,6 +76,8 @@ export default function CampaignPage() {
       </div>
       <DonationsList donations={donations} />
       <WithdrawalList withdrawals={withdrawals} />
+      <WithdrawModal campaign={campaign} pda={cid as string} />
+      <DeleteModal campaign={campaign} pda={cid as string} />
     </div>
   )
 }

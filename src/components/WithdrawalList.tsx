@@ -1,11 +1,14 @@
 import { truncateAddress } from '@/utils/helper'
 import { Transaction } from '@/utils/interfaces'
+import Link from 'next/link'
 import React from 'react'
 import { FaMoneyBillWave } from 'react-icons/fa'
 
 const WithdrawalList: React.FC<{ withdrawals: Transaction[] }> = ({
   withdrawals,
 }) => {
+  const CLUSTER_NAME = process.env.CLUSTER_NAME || 'custom'
+
   return (
     <div className="mt-8">
       <h2 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
@@ -20,9 +23,16 @@ const WithdrawalList: React.FC<{ withdrawals: Transaction[] }> = ({
               className="px-4 py-2 flex justify-between items-center"
             >
               <p className="text-gray-800 flex justify-start items-center space-x-1">
-                <strong>{truncateAddress(withdrawal.owner)}</strong>{' '}
+                <strong>
+                  <Link
+                    href={`https://explorer.solana.com/address/${withdrawal.owner}?cluster=${CLUSTER_NAME}`}
+                    target="_blank"
+                  >
+                    {truncateAddress(withdrawal.owner)}
+                  </Link>
+                </strong>{' '}
                 <small className="text-red-500">
-                  ${withdrawal.amount.toLocaleString()}
+                  {withdrawal.amount.toLocaleString()} SOL
                 </small>
               </p>
               <p className="text-sm text-gray-600">

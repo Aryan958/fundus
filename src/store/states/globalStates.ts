@@ -5,4 +5,5 @@ export const globalStates: GlobalState = {
   withdrawals: [],
   campaign: null,
   delModal: 'scale-0',
+  withdrawModal: 'scale-0',
 }

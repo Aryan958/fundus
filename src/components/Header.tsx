@@ -1,12 +1,21 @@
 'use client'
+import { getProvider } from '@/services/blockchain'
+import { useWallet } from '@solana/wallet-adapter-react'
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
 import Link from 'next/link'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { FaUserCircle, FaPlusCircle, FaBars, FaTimes } from 'react-icons/fa'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
+
+  const { publicKey, sendTransaction, signTransaction } = useWallet()
+
+  const program = useMemo(
+    () => getProvider(publicKey, signTransaction, sendTransaction),
+    [publicKey, signTransaction, sendTransaction]
+  )
 
   useEffect(() => {
     setIsMounted(true)
@@ -20,23 +29,24 @@ export default function Header() {
           Fundus<span className="text-gray-700">Crowd</span>
         </Link>
 
-        {/* Desktop Menu */}
-        <nav className="hidden md:flex space-x-6 items-center">
-          <Link
-            href="/account"
-            className="text-gray-700 hover:text-green-600 flex items-center space-x-1 transition duration-300"
-          >
-            <FaUserCircle className="text-gray-700 hover:text-green-600" />
-            <span>Account</span>
-          </Link>
-          <Link
-            href="/create"
-            className="text-gray-700 hover:text-green-600 flex items-center space-x-1 transition duration-300"
-          >
-            <FaPlusCircle className="text-gray-700 hover:text-green-600" />
-            <span>Create</span>
-          </Link>
-        </nav>
+        {program && publicKey && (
+          <nav className="hidden md:flex space-x-6 items-center">
+            <Link
+              href="/account"
+              className="text-gray-700 hover:text-green-600 flex items-center space-x-1 transition duration-300"
+            >
+              <FaUserCircle className="text-gray-700 hover:text-green-600" />
+              <span>Account</span>
+            </Link>
+            <Link
+              href="/create"
+              className="text-gray-700 hover:text-green-600 flex items-center space-x-1 transition duration-300"
+            >
+              <FaPlusCircle className="text-gray-700 hover:text-green-600" />
+              <span>Create</span>
+            </Link>
+          </nav>
+        )}
 
         {isMounted && (
           <div className="hidden md:inline-block">

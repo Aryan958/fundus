@@ -38,12 +38,14 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
     }
 
     campaign.amount_raised += amount;
+    campaign.balance += amount;
     campaign.donors += 1;
 
     contribution.amount = amount;
     contribution.cid = cid;
     contribution.owner = donor.key();
     contribution.timestamp = Clock::get()?.unix_timestamp as u64;
+    contribution.credited = true;
 
     Ok(())
 }

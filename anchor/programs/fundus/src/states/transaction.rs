@@ -7,4 +7,5 @@ pub struct Transaction {
     pub cid: u64,
     pub amount: u64,
     pub timestamp: u64,
+    pub credited: bool,
 }

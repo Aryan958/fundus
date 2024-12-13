@@ -2,7 +2,10 @@
 
 import CampaignCard from '@/components/CampaignCard'
 import CampaignHero from '@/components/CampaignHero'
-import { fetchAllCampaigns, getReadonlyProvider } from '@/services/blockchain'
+import {
+  fetchActiveCampaigns,
+  getReadonlyProvider,
+} from '@/services/blockchain'
 import { Campaign } from '@/utils/interfaces'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -12,7 +15,7 @@ export default function Page() {
   const program = useMemo(() => getReadonlyProvider(), [])
 
   useEffect(() => {
-    fetchAllCampaigns(program).then((data) => setCampaigns(data))
+    fetchActiveCampaigns(program).then((data) => setCampaigns(data))
   }, [])
 
   return (
