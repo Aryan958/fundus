@@ -1,17 +1,45 @@
-const anchor = require('@coral-xyz/anchor')
+import * as anchor from '@coral-xyz/anchor'
+import { Fundus } from '../target/types/fundus'
+import idl from '../target/idl/fundus.json'
+import fs from 'fs'
 const { SystemProgram, PublicKey } = anchor.web3
 
-describe('fundus', () => {
-  const provider = anchor.AnchorProvider.local()
-  anchor.setProvider(provider)
-  const program = anchor.workspace.Fundus
+const toggleProvider = (user: 'deployer' | 'creator') => {
+  let wallet: any
+  if (user === 'creator') {
+    const keypairData = JSON.parse(fs.readFileSync('user.json', 'utf-8'))
+    wallet = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(keypairData))
+  } else {
+    const keypairPath = `${process.env.HOME}/.config/solana/id.json`
+    const keypairData = JSON.parse(fs.readFileSync(keypairPath, 'utf-8'))
+    wallet = anchor.web3.Keypair.fromSecretKey(Uint8Array.from(keypairData))
+  }
 
-  let CID: any, DONOR_COUNT: any, WITHDRAWAL_COUNT: any
+  const defaultProvider = anchor.AnchorProvider.local()
+
+  const provider = new anchor.AnchorProvider(
+    defaultProvider.connection,
+    new anchor.Wallet(wallet),
+    defaultProvider.opts
+  )
+
+  anchor.setProvider(provider)
+
+  return provider
+}
+
+describe('fundus', () => {
+  let provider = toggleProvider('creator')
+  let program = new anchor.Program<Fundus>(idl as any, provider)
+
+  let CID: any, DONORS_COUNT: any, WITHDRAW_COUNT: any
 
   it('creates a campaign', async () => {
+    provider = toggleProvider('creator')
+    program = new anchor.Program<Fundus>(idl as any, provider)
     const creator = provider.wallet
 
-    const [programStatePda] = await PublicKey.findProgramAddress(
+    const [programStatePda] = PublicKey.findProgramAddressSync(
       [Buffer.from('program_state')],
       program.programId
     )
@@ -19,7 +47,7 @@ describe('fundus', () => {
     const state = await program.account.programState.fetch(programStatePda)
     CID = state.campaignCount.add(new anchor.BN(1))
 
-    const [campaignPda] = await PublicKey.findProgramAddress(
+    const [campaignPda] = PublicKey.findProgramAddressSync(
       [Buffer.from('campaign'), CID.toArrayLike(Buffer, 'le', 8)],
       program.programId
     )
@@ -27,114 +55,73 @@ describe('fundus', () => {
     const title = `Test Campaign Title #${CID.toString()}`
     const description = `Test Campaign description #${CID.toString()}`
     const image_url = `https://dummy_image_${CID.toString()}.png`
-    const goal = new anchor.BN(5500)
+    const goal = new anchor.BN(25 * 1_000_000_000) // 25 SOLtoken
 
-    const tx = await program.rpc.createCampaign(
-      title,
-      description,
-      image_url,
-      goal,
-      {
-        accounts: {
-          creator: creator.publicKey,
-          campaign: campaignPda,
-          programState: programStatePda,
-          systemProgram: SystemProgram.programId,
-        },
-      }
-    )
+    const tx = await program.methods
+      .createCampaign(title, description, image_url, goal)
+      .accountsPartial({
+        programState: programStatePda,
+        campaign: campaignPda,
+        creator: creator.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc()
 
     console.log('Transaction Signature:', tx)
 
     const campaign = await program.account.campaign.fetch(campaignPda)
     console.log('Campaign:', campaign)
-    DONOR_COUNT = campaign.donors
-    WITHDRAWAL_COUNT = campaign.withdrawals
+    DONORS_COUNT = campaign.donors
+    WITHDRAW_COUNT = campaign.withdrawals
   })
 
-  it('updates a campaign', async () => {
+  it('update a campaign', async () => {
+    provider = toggleProvider('creator')
+    program = new anchor.Program<Fundus>(idl as any, provider)
     const creator = provider.wallet
-    // Derive Campaign PDA
-    const [campaignPda] = await PublicKey.findProgramAddress(
-      [Buffer.from('campaign'), CID.toBuffer('le', 8)],
-      program.programId
-    )
 
-    console.log(`campaignPda: ${campaignPda.toString()}`)
-
-    // Define updated data
-    const newTitle = `Updated Campaign Title #${CID.toString()}`
-    const newDescription = `Updated Campaign Description #${CID.toString()}`
-    const newImageUrl = `https://updated_image_${CID.toString()}.png`
-    const newGoal = new anchor.BN(7500) // Updated goal
-
-    const campaignBefore = await program.account.campaign.fetch(campaignPda)
-    console.log('Campaign Before Update:', campaignBefore)
-
-    // Execute the update
-    const tx = await program.rpc.updateCampaign(
-      CID,
-      newTitle,
-      newDescription,
-      newImageUrl,
-      newGoal,
-      {
-        accounts: {
-          creator: creator.publicKey,
-          campaign: campaignPda,
-          systemProgram: SystemProgram.programId,
-        },
-      }
-    )
-
-    console.log('Transaction Signature:', tx)
-
-    // Fetch updated campaign data
-    const campaignAfter = await program.account.campaign.fetch(campaignPda)
-    console.log('Campaign After Update:', campaignAfter)
-  })
-
-  it('deletes a campaign', async () => {
-    const creator = provider.wallet
-    // Derive Campaign PDA
-    const [campaignPda] = await PublicKey.findProgramAddress(
-      [Buffer.from('campaign'), CID.toBuffer('le', 8)],
-      program.programId
-    )
-
-    // Fetch campaign before deletion
-    const campaignBefore = await program.account.campaign.fetch(campaignPda)
-    console.log('Campaign Before Deletion:', campaignBefore)
-
-    // Execute the deletion
-    const tx = await program.rpc.deleteCampaign(CID, {
-      accounts: {
-        creator: creator.publicKey,
-        campaign: campaignPda,
-        systemProgram: SystemProgram.programId,
-      },
-    })
-
-    console.log('Transaction Signature:', tx)
-
-    const campaignAfter = await program.account.campaign.fetch(campaignPda)
-    console.log('Campaign After Deletion:', campaignAfter)
-  })
-
-  it('donate to campaign', async () => {
-    const donor = provider.wallet
-
-    const [campaignPda] = await PublicKey.findProgramAddress(
+    const [campaignPda] = PublicKey.findProgramAddressSync(
       [Buffer.from('campaign'), CID.toArrayLike(Buffer, 'le', 8)],
       program.programId
     )
 
-    const [contributionPda] = await PublicKey.findProgramAddress(
+    const title = `Update Test Campaign Title #${CID.toString()}`
+    const description = `Updated Test Campaign description #${CID.toString()}`
+    const image_url = `https://dummy_image_${CID.toString()}.png`
+    const goal = new anchor.BN(30 * 1_000_000_000) // 30 SOLtoken
+
+    const tx = await program.methods
+      .updateCampaign(CID, title, description, image_url, goal)
+      .accountsPartial({
+        campaign: campaignPda,
+        creator: creator.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc()
+
+    console.log('Transaction Signature:', tx)
+
+    const campaign = await program.account.campaign.fetch(campaignPda)
+    console.log('Campaign:', campaign)
+  })
+
+  it('donate to campaign', async () => {
+    provider = toggleProvider('deployer')
+    program = new anchor.Program<Fundus>(idl as any, provider)
+
+    const donor = provider.wallet
+
+    const [campaignPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('campaign'), CID.toArrayLike(Buffer, 'le', 8)],
+      program.programId
+    )
+
+    const [transactionPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('donor'),
         donor.publicKey.toBuffer(),
         CID.toArrayLike(Buffer, 'le', 8),
-        DONOR_COUNT.add(new anchor.BN(1)).toArrayLike(Buffer, 'le', 8),
+        DONORS_COUNT.add(new anchor.BN(1)).toArrayLike(Buffer, 'le', 8),
       ],
       program.programId
     )
@@ -142,182 +129,165 @@ describe('fundus', () => {
     const donorBefore = await provider.connection.getBalance(donor.publicKey)
     const campaignBefore = await provider.connection.getBalance(campaignPda)
 
-    const donation_amount = new anchor.BN(Math.round(10.5 * 1_000_000_000)) // 1.5 SOL in lamports
-    const tx = await program.rpc.donate(CID, donation_amount, {
-      accounts: {
-        donor: donor.publicKey,
+    const donation_amount = new anchor.BN(Math.round(10.5 * 1_000_000_000))
+    const tx = await program.methods
+      .donate(CID, donation_amount)
+      .accountsPartial({
         campaign: campaignPda,
-        contribution: contributionPda,
+        transaction: transactionPda,
+        donor: donor.publicKey,
         systemProgram: SystemProgram.programId,
-      },
-    })
+      })
+      .rpc()
 
     console.log('Transaction Signature:', tx)
 
     const donorAfter = await provider.connection.getBalance(donor.publicKey)
     const campaignAfter = await provider.connection.getBalance(campaignPda)
+    const transaction = await program.account.transaction.fetch(transactionPda)
 
-    const contribution = await program.account.transaction.fetch(
-      contributionPda
-    )
-    console.log('Contribution:', contribution)
+    console.log('Donation:', transaction)
 
-    console.log(
-      `
-        donorBefore: ${donorBefore},
-        donorAfter: ${donorAfter},
-        donation_amount: ${donation_amount.toNumber()}
-      `
-    )
-    console.log(
-      `
-        campaignBefore: ${campaignBefore},
-        campaignAfter: ${campaignAfter},
-        donation_amount: ${donation_amount.toNumber()}
-      `
-    )
+    console.log(`
+      donor balance before: ${donorBefore},
+      donor balance after: ${donorAfter}, 
+    `)
+
+    console.log(`
+      campaign balance before: ${campaignBefore},
+      campaign balance after: ${campaignAfter}, 
+    `)
   })
 
-  it('withdraws from campaign', async () => {
-    const withdrawer = provider.wallet
+  it('withdraw from campaign', async () => {
+    provider = toggleProvider('creator')
+    program = new anchor.Program<Fundus>(idl as any, provider)
+    const creator = provider.wallet
 
-    // Derive PDAs
-    const [programStatePda] = await PublicKey.findProgramAddress(
+    const [programStatePda] = PublicKey.findProgramAddressSync(
       [Buffer.from('program_state')],
       program.programId
     )
 
-    const [campaignPda] = await PublicKey.findProgramAddress(
+    const [campaignPda] = PublicKey.findProgramAddressSync(
       [Buffer.from('campaign'), CID.toArrayLike(Buffer, 'le', 8)],
       program.programId
     )
 
-    const [withdrawalPda] = await PublicKey.findProgramAddress(
+    const [transactionPda] = PublicKey.findProgramAddressSync(
       [
         Buffer.from('withdraw'),
-        withdrawer.publicKey.toBuffer(),
+        creator.publicKey.toBuffer(),
         CID.toArrayLike(Buffer, 'le', 8),
-        WITHDRAWAL_COUNT.add(new anchor.BN(1)).toArrayLike(Buffer, 'le', 8),
+        WITHDRAW_COUNT.add(new anchor.BN(1)).toArrayLike(Buffer, 'le', 8),
       ],
       program.programId
     )
 
-    // Fetch current balances
-    const withdrawerBalanceBefore = await provider.connection.getBalance(
-      withdrawer.publicKey
+    const creatorBefore = await provider.connection.getBalance(
+      creator.publicKey
     )
-    const campaignBalanceBefore = await provider.connection.getBalance(
-      campaignPda
-    )
+    const campaignBefore = await provider.connection.getBalance(campaignPda)
 
-    // Fetch program state for platform info
     const programState = await program.account.programState.fetch(
       programStatePda
     )
-    const platformAddress = programState.platformAddress
-    const platformBalanceBefore = await provider.connection.getBalance(
-      platformAddress
+    const platformBefore = await provider.connection.getBalance(
+      programState.platformAddress
     )
 
-    // Define withdrawal amount (1.5 SOL in lamports)
-    const withdrawalAmount = new anchor.BN(Math.round(1.5 * 1_000_000_000))
-
-    // Execute the withdrawal
-    const tx = await program.rpc.withdraw(CID, withdrawalAmount, {
-      accounts: {
-        creator: withdrawer.publicKey,
-        campaign: campaignPda,
-        withdrawal: withdrawalPda,
-        platformAddress: platformAddress,
+    const donation_amount = new anchor.BN(Math.round(3.5 * 1_000_000_000))
+    const tx = await program.methods
+      .withdraw(CID, donation_amount)
+      .accountsPartial({
         programState: programStatePda,
+        campaign: campaignPda,
+        transaction: transactionPda,
+        creator: creator.publicKey,
+        platformAddress: programState.platformAddress,
         systemProgram: SystemProgram.programId,
-      },
-    })
+      })
+      .rpc()
+
     console.log('Transaction Signature:', tx)
 
-    // Fetch updated balances
-    const withdrawerBalanceAfter = await provider.connection.getBalance(
-      withdrawer.publicKey
-    )
-    const campaignBalanceAfter = await provider.connection.getBalance(
-      campaignPda
-    )
-    const platformBalanceAfter = await provider.connection.getBalance(
-      platformAddress
+    const creatorAfter = await provider.connection.getBalance(creator.publicKey)
+    const campaignAfter = await provider.connection.getBalance(campaignPda)
+    const transaction = await program.account.transaction.fetch(transactionPda)
+
+    const platformAfter = await provider.connection.getBalance(
+      programState.platformAddress
     )
 
-    // Fetch withdrawal account details
-    const withdrawal = await program.account.transaction.fetch(withdrawalPda)
-    console.log('Withdrawal Details:', withdrawal)
+    console.log('Withdrawal:', transaction)
 
-    // Calculate expected platform fee
-    const platformFeePercentage = programState.platformFee.toNumber()
-    const platformFee = Math.floor(
-      (withdrawalAmount.toNumber() * platformFeePercentage) / 100
-    )
-    const creatorAmount = withdrawalAmount.toNumber() - platformFee
+    console.log(`
+      creator balance before: ${creatorBefore},
+      creator balance after: ${creatorAfter}, 
+    `)
 
-    // Log balances
     console.log(`
-      Withdrawer Balance:
-        Before: ${withdrawerBalanceBefore} lamports
-        After:  ${withdrawerBalanceAfter} lamports
+      platform balance before: ${platformBefore},
+      platform balance after: ${platformAfter}, 
     `)
+
     console.log(`
-      Campaign Balance:
-        Before: ${campaignBalanceBefore} lamports
-        After:  ${campaignBalanceAfter} lamports
-    `)
-    console.log(`
-      Platform Balance:
-        Before: ${platformBalanceBefore} lamports
-        After:  ${platformBalanceAfter} lamports
-        Fee Deducted: ${platformFee} lamports
-    `)
-    console.log(`
-      Withdrawal Amount:
-        Total: ${withdrawalAmount.toNumber()} lamports
-        Creator's Share: ${creatorAmount} lamports
-        Platform's Share: ${platformFee} lamports
+      campaign balance before: ${campaignBefore},
+      campaign balance after: ${campaignAfter}, 
     `)
   })
 
-  it('updates platform settings', async () => {
+  it('delete a campaign', async () => {
+    provider = toggleProvider('creator')
+    program = new anchor.Program<Fundus>(idl as any, provider)
+    const creator = provider.wallet
+
+    const [campaignPda] = PublicKey.findProgramAddressSync(
+      [Buffer.from('campaign'), CID.toArrayLike(Buffer, 'le', 8)],
+      program.programId
+    )
+
+    const tx = await program.methods
+      .deleteCampaign(CID)
+      .accountsPartial({
+        campaign: campaignPda,
+        creator: creator.publicKey,
+        systemProgram: SystemProgram.programId,
+      })
+      .rpc()
+
+    console.log('Transaction Signature:', tx)
+
+    const campaign = await program.account.campaign.fetch(campaignPda)
+    console.log('Campaign:', campaign)
+  })
+
+  it('updates platform fee', async () => {
+    provider = toggleProvider('deployer')
+    program = new anchor.Program<Fundus>(idl as any, provider)
     const updater = provider.wallet
 
-    // Derive the Program State PDA
-    const [programStatePda] = await PublicKey.findProgramAddress(
+    const [programStatePda] = PublicKey.findProgramAddressSync(
       [Buffer.from('program_state')],
       program.programId
     )
 
-    // Fetch current state
-    const programStateBefore = await program.account.programState.fetch(
+    const stateBefore = await program.account.programState.fetch(
       programStatePda
     )
-    console.log(
-      'Program State Before:',
-      (programStateBefore.platformFee as string).toString()
-    )
+    console.log('state:', stateBefore)
 
-    // Generate new platform address and fee
-    const newPlatformFee = 10 // New platform fee in percentage
-
-    // Update platform settings
-    await program.rpc.updatePlatformSettings(new anchor.BN(newPlatformFee), {
-      accounts: {
+    const tx = await program.methods
+      .updatePlatformSettings(new anchor.BN(7))
+      .accountsPartial({
         updater: updater.publicKey,
         programState: programStatePda,
-      },
-    })
+      })
+      .rpc()
 
-    // Fetch updated state
-    const programStateAfter = await program.account.programState.fetch(
-      programStatePda
-    )
-    console.log(
-      'Program State After:',
-      (programStateAfter.platformFee as string).toString()
-    )
+    console.log('Transaction Signature:', tx)
+
+    const stateAfter = await program.account.programState.fetch(programStatePda)
+    console.log('state:', stateAfter)
   })
 })

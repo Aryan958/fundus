@@ -1,21 +1,55 @@
+import {
+  fetchProgramState,
+  getProvider,
+  updatePlatform,
+} from '@/services/blockchain'
 import { ProgramState } from '@/utils/interfaces'
-import React, { useState } from 'react'
+import { useWallet } from '@solana/wallet-adapter-react'
+import React, { useMemo, useState } from 'react'
 import { FaDonate } from 'react-icons/fa'
+import { toast } from 'react-toastify'
 
-const AccountDetails: React.FC<{ programState: ProgramState }> = ({
+const PlatformSettings: React.FC<{ programState: ProgramState }> = ({
   programState,
 }) => {
   const [percent, setPercent] = useState('')
+  const { publicKey, sendTransaction, signTransaction } = useWallet()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const program = useMemo(
+    () => getProvider(publicKey, signTransaction, sendTransaction),
+    [publicKey, signTransaction, sendTransaction]
+  )
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!percent) return
+    if (!publicKey) return toast.warn('Please connect wallet')
 
-    // Simulate an update transaction
-    console.log(`Service fee updated to ${percent}%`)
-    setPercent('')
-    alert(`Service fee successfully updated to ${percent}%`)
+    await toast.promise(
+      new Promise<void>(async (resolve, reject) => {
+        try {
+          const tx: any = await updatePlatform(
+            program!,
+            publicKey!,
+            Number(percent)
+          )
+
+          setPercent('')
+          await fetchProgramState(program!)
+
+          console.log(tx)
+          resolve(tx)
+        } catch (error) {
+          reject(error)
+        }
+      }),
+      {
+        pending: 'Approve transaction...',
+        success: 'Transaction successful 👌',
+        error: 'Encountered error 🤯',
+      }
+    )
   }
 
   return (
@@ -45,6 +79,8 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
             placeholder={`Current Fee (${programState.platformFee}%)`}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
             required
+            min={1}
+            max={15}
           />
           <button
             type="submit"
@@ -61,4 +97,4 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
   )
 }
 
-export default AccountDetails
+export default PlatformSettings
