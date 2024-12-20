@@ -1,21 +1,15 @@
+import 'dotenv/config'
 import * as anchor from '@coral-xyz/anchor'
 import { Fundus } from '../target/types/fundus'
 import idl from '../target/idl/fundus.json'
 import fs from 'fs'
+import { getClusterURL } from '@/utils/helper'
 const { SystemProgram, PublicKey } = anchor.web3
 
 const main = async (cluster: string) => {
-  // Defines the clusters URLs
-  const clusterUrls: any = {
-    'mainnet-beta': 'https://api.mainnet-beta.solana.com',
-    testnet: 'https://api.testnet.solana.com',
-    devnet: 'https://api.devnet.solana.com',
-    localhost: 'http://localhost:8899',
-  }
-
   // Creates a connection to the cluster
   const connection = new anchor.web3.Connection(
-    clusterUrls[cluster],
+    getClusterURL(cluster),
     'confirmed'
   )
 
@@ -62,3 +56,4 @@ const main = async (cluster: string) => {
 
 const cluster: string = process.env.NEXT_PUBLIC_CLUSTER || 'localhost'
 main(cluster).catch((error) => console.log(error))
+
