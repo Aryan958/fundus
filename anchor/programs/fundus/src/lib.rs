@@ -9,7 +9,8 @@ use instructions::*;
 #[allow(unused_imports)]
 use states::*;
 
-declare_id!("AWMHjJYpfc8iDrHRALDryZtw8X2FQubnwH5ztGnxSatu");
+// Program ID declaration (replace with your own ID when deploying)
+declare_id!("8tfuvG2FVPUE41keGjgybaftAiw9UQBK3FGtYxMyzJ5W");
 
 #[program]
 pub mod fundus {

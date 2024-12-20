@@ -1,10 +1,9 @@
-'use client'
-import { getProvider } from '@/services/blockchain'
-import { useWallet } from '@solana/wallet-adapter-react'
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
-import Link from 'next/link'
 import React, { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { FaUserCircle, FaPlusCircle, FaBars, FaTimes } from 'react-icons/fa'
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui'
+import { useWallet } from '@solana/wallet-adapter-react'
+import { getProvider } from '@/services/blockchain'
 
 export default function Header() {
   const [isOpen, setIsOpen] = useState(false)
@@ -29,6 +28,7 @@ export default function Header() {
           Fundus<span className="text-gray-700">Crowd</span>
         </Link>
 
+        {/* Static Navigation */}
         {program && publicKey && (
           <nav className="hidden md:flex space-x-6 items-center">
             <Link
@@ -50,6 +50,7 @@ export default function Header() {
 
         {isMounted && (
           <div className="hidden md:inline-block">
+            {/* Static Wallet Button */}
             <WalletMultiButton
               style={{ backgroundColor: '#16a34a', color: 'white' }}
             />
@@ -73,20 +74,24 @@ export default function Header() {
       {isOpen && (
         <nav className="md:hidden bg-white shadow-md py-4">
           <div className="container mx-auto px-6 space-y-4">
-            <Link
-              href="/account"
-              className="text-gray-700 hover:text-green-600 flex items-center space-x-2 transition duration-300"
-            >
-              <FaUserCircle />
-              <span>Account</span>
-            </Link>
-            <Link
-              href="/create"
-              className="text-gray-700 hover:text-green-600 flex items-center space-x-2 transition duration-300"
-            >
-              <FaPlusCircle />
-              <span>Create</span>
-            </Link>
+            {program && publicKey && (
+              <>
+                <Link
+                  href="/account"
+                  className="text-gray-700 hover:text-green-600 flex items-center space-x-2 transition duration-300"
+                >
+                  <FaUserCircle />
+                  <span>Account</span>
+                </Link>
+                <Link
+                  href="/create"
+                  className="text-gray-700 hover:text-green-600 flex items-center space-x-2 transition duration-300"
+                >
+                  <FaPlusCircle />
+                  <span>Create</span>
+                </Link>
+              </>
+            )}
             {isMounted && (
               <WalletMultiButton
                 style={{ backgroundColor: '#16a34a', color: 'white' }}

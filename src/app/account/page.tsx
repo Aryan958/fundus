@@ -1,46 +1,42 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { Campaign, RootState } from '@/utils/interfaces'
 import CampaignCard from '@/components/CampaignCard'
+import PlatformSettings from '@/components/PlatformSettings'
 import {
   fetchProgramState,
   fetchUserCampaigns,
-  getProvider,
-  getReadonlyProvider,
+  getProviderReadonly,
 } from '@/services/blockchain'
+import { Campaign, RootState } from '@/utils/interfaces'
 import { useWallet } from '@solana/wallet-adapter-react'
-import AccountDetails from '@/components/AccountDetails'
 import { useSelector } from 'react-redux'
 
 export default function Page() {
+  const { publicKey } = useWallet()
   const [loaded, setLoaded] = useState(false)
-  const [campaigns, setCampaigns] = useState<Campaign[]>([])
-  const { publicKey, sendTransaction, signTransaction } = useWallet()
 
   const { programState } = useSelector(
     (states: RootState) => states.globalStates
   )
 
-  const program = useMemo(
-    () => getProvider(publicKey, signTransaction, sendTransaction),
-    [publicKey, signTransaction, sendTransaction]
-  )
-
-  const programReadonly = useMemo(() => getReadonlyProvider(), [])
-
-  const fetchData = async () => {
-    if (program && publicKey) {
-      fetchUserCampaigns(program, publicKey).then((data) => setCampaigns(data))
-    }
-
-    await fetchProgramState(programReadonly)
-    setLoaded(true)
-  }
+  const [campaigns, setCampaigns] = useState<Campaign[]>([])
+  const program = useMemo(() => getProviderReadonly(), [])
 
   useEffect(() => {
+    const fetchData = async () => {
+      if (program && publicKey) {
+        fetchUserCampaigns(program!, publicKey!).then((data) =>
+          setCampaigns(data)
+        )
+      }
+
+      await fetchProgramState(program!)
+      setLoaded(true)
+    }
+
     fetchData()
-  }, [publicKey])
+  }, [program, publicKey])
 
   if (!loaded) return <h4>Loading...</h4>
 
@@ -51,7 +47,7 @@ export default function Page() {
         <h1 className="text-3xl font-bold mb-6">My Campaigns</h1>
         {campaigns.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {campaigns.map((campaign: Campaign) => (
+            {campaigns.map((campaign) => (
               <CampaignCard key={campaign.cid} campaign={campaign} />
             ))}
           </div>
@@ -77,9 +73,9 @@ export default function Page() {
       </div>
 
       {programState &&
-        programState.platformAddress == publicKey?.toBase58() && (
+        programState.platformAddress === publicKey?.toBase58() && (
           <div className="md:col-span-1">
-            <AccountDetails programState={programState} />
+            <PlatformSettings programState={programState} />
           </div>
         )}
     </div>

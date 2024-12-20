@@ -9,7 +9,7 @@ import React, { useMemo, useState } from 'react'
 import { FaDonate } from 'react-icons/fa'
 import { toast } from 'react-toastify'
 
-const AccountDetails: React.FC<{ programState: ProgramState }> = ({
+const PlatformSettings: React.FC<{ programState: ProgramState }> = ({
   programState,
 }) => {
   const [percent, setPercent] = useState('')
@@ -22,20 +22,25 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!program || !publicKey || !percent) return
-    
+
+    if (!percent) return
+    if (!publicKey) return toast.warn('Please connect wallet')
+
     await toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          const tx = await updatePlatform(program!, publicKey!, Number(percent))
+          const tx: any = await updatePlatform(
+            program!,
+            publicKey!,
+            Number(percent)
+          )
 
           setPercent('')
-          await fetchProgramState(program)
+          await fetchProgramState(program!)
 
           console.log(tx)
-          resolve(tx as any)
+          resolve(tx)
         } catch (error) {
-          console.error('Transaction failed:', error)
           reject(error)
         }
       }),
@@ -59,7 +64,7 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
             htmlFor="donationAmount"
             className="block text-gray-700 font-semibold mb-2"
           >
-            Percentage range are (1 - 15%)
+            Percentage range is (1 - 15%)
           </label>
           <input
             type="text"
@@ -74,11 +79,13 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
             placeholder={`Current Fee (${programState.platformFee}%)`}
             className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600"
             required
+            min={1}
+            max={15}
           />
           <button
             type="submit"
             className={`mt-4 w-full bg-green-600 hover:bg-green-700 ${
-              !percent || !publicKey ? 'opacity-50 cursor-not-allowed' : ''
+              !percent ? 'opacity-50 cursor-not-allowed' : ''
             } text-white font-semibold py-2 px-4 rounded-lg flex items-center
               justify-center gap-2`}
           >
@@ -90,4 +97,4 @@ const AccountDetails: React.FC<{ programState: ProgramState }> = ({
   )
 }
 
-export default AccountDetails
+export default PlatformSettings

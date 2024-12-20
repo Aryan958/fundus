@@ -5,22 +5,25 @@ use anchor_lang::prelude::*;
 
 pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
     let campaign = &mut ctx.accounts.campaign;
-    let donor = &ctx.accounts.donor;
-    let contribution = &mut ctx.accounts.contribution;
+    let donor = &mut ctx.accounts.donor;
+    let transaction = &mut ctx.accounts.transaction;
 
-    // if !campaign.active {
-    //     return Err(InactiveCampaign.into());
-    // }
+    if campaign.cid != cid {
+        return Err(CampaignNotFound.into());
+    }
+
+    if !campaign.active {
+        return Err(InactiveCampaign.into());
+    }
 
     if amount < 1_000_000_000 {
-        return Err(InvalidDonationAmount.into());
+        return Err(InvalidGoalAmount.into());
     }
-    
+
     if campaign.amount_raised >= campaign.goal {
         return Err(CampaignGoalActualized.into());
     }
 
-    // Transfer lamports from the donor to the campaign
     let tx_instruction = anchor_lang::solana_program::system_instruction::transfer(
         &donor.key(),
         &campaign.key(),
@@ -33,7 +36,7 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
     );
 
     if let Err(e) = result {
-        msg!("Donation transfer failed: {:?}", e); // Logging transfer failure
+        msg!("Donation transfer failed: {:?}", e);
         return Err(e.into());
     }
 
@@ -41,11 +44,11 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
     campaign.balance += amount;
     campaign.donors += 1;
 
-    contribution.amount = amount;
-    contribution.cid = cid;
-    contribution.owner = donor.key();
-    contribution.timestamp = Clock::get()?.unix_timestamp as u64;
-    contribution.credited = true;
+    transaction.amount = amount;
+    transaction.cid = cid;
+    transaction.owner = donor.key();
+    transaction.timestamp = Clock::get()?.unix_timestamp as u64;
+    transaction.credited = true;
 
     Ok(())
 }
@@ -53,9 +56,6 @@ pub fn donate(ctx: Context<DonateCtx>, cid: u64, amount: u64) -> Result<()> {
 #[derive(Accounts)]
 #[instruction(cid: u64)]
 pub struct DonateCtx<'info> {
-    #[account(mut)]
-    pub donor: Signer<'info>,
-
     #[account(
         mut,
         seeds = [
@@ -78,7 +78,9 @@ pub struct DonateCtx<'info> {
         ],
         bump
     )]
-    pub contribution: Account<'info, Transaction>,
+    pub transaction: Account<'info, Transaction>,
 
+    #[account(mut)]
+    pub donor: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

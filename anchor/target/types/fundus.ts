@@ -5,7 +5,7 @@
  * IDL can be found at `target/idl/fundus.json`.
  */
 export type Fundus = {
-  "address": "AWMHjJYpfc8iDrHRALDryZtw8X2FQubnwH5ztGnxSatu",
+  "address": "8tfuvG2FVPUE41keGjgybaftAiw9UQBK3FGtYxMyzJ5W",
   "metadata": {
     "name": "fundus",
     "version": "0.1.0",
@@ -27,17 +27,17 @@ export type Fundus = {
       ],
       "accounts": [
         {
-          "name": "creator",
-          "writable": true,
-          "signer": true
+          "name": "programState",
+          "writable": true
         },
         {
           "name": "campaign",
           "writable": true
         },
         {
-          "name": "programState",
-          "writable": true
+          "name": "creator",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -77,11 +77,6 @@ export type Fundus = {
       ],
       "accounts": [
         {
-          "name": "creator",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "campaign",
           "writable": true,
           "pda": {
@@ -105,6 +100,11 @@ export type Fundus = {
               }
             ]
           }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -132,11 +132,6 @@ export type Fundus = {
       ],
       "accounts": [
         {
-          "name": "donor",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "campaign",
           "writable": true,
           "pda": {
@@ -162,8 +157,13 @@ export type Fundus = {
           }
         },
         {
-          "name": "contribution",
+          "name": "transaction",
           "writable": true
+        },
+        {
+          "name": "donor",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -246,11 +246,6 @@ export type Fundus = {
       ],
       "accounts": [
         {
-          "name": "creator",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "campaign",
           "writable": true,
           "pda": {
@@ -274,6 +269,11 @@ export type Fundus = {
               }
             ]
           }
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -369,11 +369,6 @@ export type Fundus = {
       ],
       "accounts": [
         {
-          "name": "creator",
-          "writable": true,
-          "signer": true
-        },
-        {
           "name": "campaign",
           "writable": true,
           "pda": {
@@ -399,7 +394,7 @@ export type Fundus = {
           }
         },
         {
-          "name": "withdrawal",
+          "name": "transaction",
           "writable": true
         },
         {
@@ -409,6 +404,11 @@ export type Fundus = {
         {
           "name": "platformAddress",
           "writable": true
+        },
+        {
+          "name": "creator",
+          "writable": true,
+          "signer": true
         },
         {
           "name": "systemProgram",
@@ -472,7 +472,7 @@ export type Fundus = {
     {
       "code": 6000,
       "name": "alreadyInitialized",
-      "msg": "The program has already been initialized."
+      "msg": "Th program has already been initialied."
     },
     {
       "code": 6001,
@@ -496,53 +496,48 @@ export type Fundus = {
     },
     {
       "code": 6005,
-      "name": "inactiveCampaign",
-      "msg": "Campaign is inactive."
-    },
-    {
-      "code": 6006,
-      "name": "invalidDonationAmount",
-      "msg": "Donation amount must be at least 1 SOL."
-    },
-    {
-      "code": 6007,
       "name": "unauthorized",
       "msg": "Unauthorized access."
     },
     {
-      "code": 6008,
-      "name": "invalidWithdrawalAmount",
-      "msg": "Withdrawal amount must be greater than zero."
-    },
-    {
-      "code": 6009,
-      "name": "insufficientFund",
-      "msg": "Insufficient funds in the campaign."
-    },
-    {
-      "code": 6010,
-      "name": "invalidPlatformFee",
-      "msg": "Invalid platform fee percentage."
-    },
-    {
-      "code": 6011,
-      "name": "invalidPlatformAddress",
-      "msg": "The provided platform address is invalid."
-    },
-    {
-      "code": 6012,
+      "code": 6006,
       "name": "campaignNotFound",
       "msg": "Campaign not found."
     },
     {
-      "code": 6013,
-      "name": "campaignAlreadyFunded",
-      "msg": "Campaign already received funding."
+      "code": 6007,
+      "name": "inactiveCampaign",
+      "msg": "Campaign is inactive."
     },
     {
-      "code": 6014,
+      "code": 6008,
+      "name": "invalidDonationAmount",
+      "msg": "Donation amount must be at least 1 SOL."
+    },
+    {
+      "code": 6009,
       "name": "campaignGoalActualized",
       "msg": "Campaign goal reached."
+    },
+    {
+      "code": 6010,
+      "name": "invalidWithdrawalAmount",
+      "msg": "Withdrawal amount must be at least 1 SOL."
+    },
+    {
+      "code": 6011,
+      "name": "insufficientFund",
+      "msg": "Insufficient funds in the campaign."
+    },
+    {
+      "code": 6012,
+      "name": "invalidPlatformAddress",
+      "msg": "The provided platform address is invalid."
+    },
+    {
+      "code": 6013,
+      "name": "invalidPlatformFee",
+      "msg": "Invalid platform fee percentage."
     }
   ],
   "types": [

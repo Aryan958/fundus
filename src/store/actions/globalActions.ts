@@ -7,17 +7,14 @@ import {
 import { PayloadAction } from '@reduxjs/toolkit'
 
 export const globalActions = {
+  setCampaign: (state: GlobalState, action: PayloadAction<Campaign>) => {
+    state.campaign = action.payload
+  },
   setDonations: (state: GlobalState, action: PayloadAction<Transaction[]>) => {
     state.donations = action.payload
   },
-  setWithdrawals: (
-    state: GlobalState,
-    action: PayloadAction<Transaction[]>
-  ) => {
+  setWithdrawls: (state: GlobalState, action: PayloadAction<Transaction[]>) => {
     state.withdrawals = action.payload
-  },
-  setCampaign: (state: GlobalState, action: PayloadAction<Campaign>) => {
-    state.campaign = action.payload
   },
   setStates: (state: GlobalState, action: PayloadAction<ProgramState>) => {
     state.programState = action.payload

@@ -1,48 +1,42 @@
 'use client'
 
 import React, { useEffect, useMemo, useState } from 'react'
-import { RootState } from '@/utils/interfaces'
 import { useParams } from 'next/navigation'
 import CampaignDetails from '@/components/CampaignDetails'
 import CampaignDonate from '@/components/CampaignDonate'
 import DonationsList from '@/components/DonationsList'
 import WithdrawalList from '@/components/WithdrawalList'
 import Image from 'next/image'
-import {
-  fetchAllDonations,
-  fetchAllWithdrawals,
-  fetchCampaignDetails,
-  getReadonlyProvider,
-} from '@/services/blockchain'
-import { useSelector } from 'react-redux'
 import WithdrawModal from '@/components/WithdrawModal'
 import DeleteModal from '@/components/DeleteModal'
+import { dummyTransactions } from '@/data'
+import {
+  fetchAllDonations,
+  fetchAllWithsrawals,
+  fetchCampaignDetails,
+  getProviderReadonly,
+} from '@/services/blockchain'
+import { RootState } from '@/utils/interfaces'
+import { useSelector } from 'react-redux'
 
 export default function CampaignPage() {
   const { cid } = useParams()
-  const [loaded, setLoaded] = useState(false)
+  const program = useMemo(() => getProviderReadonly(), [])
 
-  const { campaign, donations, withdrawals } = useSelector(
-    (states: RootState) => states.globalStates
-  )
-
-  const program = useMemo(() => getReadonlyProvider(), [])
+  const { campaign, donations, withdrawals } = useSelector((states: RootState) => states.globalStates)
 
   useEffect(() => {
     if (cid) {
-      // Here, you might want to filter or find the campaign based on cid instead of just setting the first one.
       const fetchDetails = async () => {
         await fetchCampaignDetails(program!, cid as string)
         await fetchAllDonations(program!, cid as string)
-        await fetchAllWithdrawals(program!, cid as string)
+        await fetchAllWithsrawals(program!, cid as string)
       }
 
       fetchDetails()
     }
-    setLoaded(true)
   }, [program, cid])
 
-  if (!loaded) return <h4>Loading...</h4>
   if (!campaign) return <h4>Campaign not found</h4>
 
   return (

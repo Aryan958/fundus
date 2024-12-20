@@ -11,7 +11,7 @@ pub fn update_campaign(
     goal: u64,
 ) -> Result<()> {
     let campaign = &mut ctx.accounts.campaign;
-    let creator = &ctx.accounts.creator;
+    let creator = &mut ctx.accounts.creator;
 
     if campaign.creator != creator.key() {
         return Err(Unauthorized.into());
@@ -21,23 +21,16 @@ pub fn update_campaign(
         return Err(CampaignNotFound.into());
     }
 
-    if campaign.amount_raised > 0 {
-        return Err(CampaignAlreadyFunded.into());
-    }
-
     if title.len() > 64 {
         return Err(TitleTooLong.into());
     }
-
     if description.len() > 512 {
         return Err(DescriptionTooLong.into());
     }
-
     if image_url.len() > 256 {
         return Err(ImageUrlTooLong.into());
     }
-
-    if goal <= 0 {
+    if goal < 1_000_000_000 {
         return Err(InvalidGoalAmount.into());
     }
 
@@ -52,8 +45,6 @@ pub fn update_campaign(
 #[derive(Accounts)]
 #[instruction(cid: u64)]
 pub struct UpdateCampaignCtx<'info> {
-    #[account(mut)]
-    pub creator: Signer<'info>,
     #[account(
         mut,
         seeds = [
@@ -63,5 +54,8 @@ pub struct UpdateCampaignCtx<'info> {
         bump
     )]
     pub campaign: Account<'info, Campaign>,
+
+    #[account(mut)]
+    pub creator: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

@@ -4,7 +4,7 @@ use anchor_lang::prelude::*;
 
 pub fn delete_campaign(ctx: Context<DeleteCampaignCtx>, cid: u64) -> Result<()> {
     let campaign = &mut ctx.accounts.campaign;
-    let creator = &ctx.accounts.creator;
+    let creator = &mut ctx.accounts.creator;
 
     if campaign.creator != creator.key() {
         return Err(Unauthorized.into());
@@ -26,8 +26,6 @@ pub fn delete_campaign(ctx: Context<DeleteCampaignCtx>, cid: u64) -> Result<()> 
 #[derive(Accounts)]
 #[instruction(cid: u64)]
 pub struct DeleteCampaignCtx<'info> {
-    #[account(mut)]
-    pub creator: Signer<'info>,
     #[account(
         mut,
         seeds = [
@@ -37,5 +35,8 @@ pub struct DeleteCampaignCtx<'info> {
         bump
     )]
     pub campaign: Account<'info, Campaign>,
+
+    #[account(mut)]
+    pub creator: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

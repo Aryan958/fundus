@@ -1,3 +1,9 @@
+import React, { FormEvent, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { FaDollarSign, FaDonate, FaEdit, FaTrashAlt } from 'react-icons/fa'
+import { Campaign } from '@/utils/interfaces'
+import { toast } from 'react-toastify'
+import { useWallet } from '@solana/wallet-adapter-react'
 import {
   donateToCampaign,
   fetchAllDonations,
@@ -5,13 +11,7 @@ import {
   getProvider,
 } from '@/services/blockchain'
 import { globalActions } from '@/store/globalSlices'
-import { Campaign } from '@/utils/interfaces'
-import { useWallet } from '@solana/wallet-adapter-react'
-import Link from 'next/link'
-import React, { FormEvent, useMemo, useState } from 'react'
-import { FaDollarSign, FaDonate, FaEdit, FaTrashAlt } from 'react-icons/fa'
 import { useDispatch } from 'react-redux'
-import { toast } from 'react-toastify'
 
 const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
   campaign,
@@ -19,7 +19,6 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
 }) => {
   const { publicKey, sendTransaction, signTransaction } = useWallet()
   const [amount, setAmount] = useState('')
-
   const { setWithdrawModal, setDelModal } = globalActions
   const dispatch = useDispatch()
 
@@ -35,25 +34,25 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
       return toast.warn('Amount exceeds campaign goal')
     }
 
+    if (!publicKey) return toast.warn('Please connect wallet')
+
     await toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          const tx = await donateToCampaign(
+          const tx: any = await donateToCampaign(
             program!,
             publicKey!,
-            pda,
+            pda!,
             Number(amount)
           )
 
           setAmount('')
-
           await fetchCampaignDetails(program!, pda)
           await fetchAllDonations(program!, pda)
 
           console.log(tx)
-          resolve(tx as any)
+          resolve(tx)
         } catch (error) {
-          console.error('Transaction failed:', error)
           reject(error)
         }
       }),
@@ -100,13 +99,11 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
             type="submit"
             disabled={
               !amount ||
-              !publicKey ||
               !campaign.active ||
               campaign.amountRaised >= campaign.goal
             }
             className={`mt-4 w-full bg-green-600 hover:bg-green-700 ${
               !amount ||
-              !publicKey ||
               !campaign.active ||
               campaign.amountRaised >= campaign.goal
                 ? 'opacity-50 cursor-not-allowed'
@@ -118,7 +115,7 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
           </button>
         </form>
 
-        {publicKey && publicKey.toBase58() == campaign.creator && (
+        {publicKey && campaign.creator === publicKey.toBase58() && (
           <div className="mt-6 flex flex-wrap gap-2 md:flex-nowrap md:gap-0">
             <Link
               href={`/campaign/edit/${pda}`}
@@ -129,15 +126,17 @@ const CampaignDonate: React.FC<{ campaign: Campaign; pda: string }> = ({
               <FaEdit />
               Edit
             </Link>
-            <button
-              type="button"
-              className="bg-green-600 hover:bg-green-700 text-white
+            {campaign.active && (
+              <button
+                type="button"
+                className="bg-green-600 hover:bg-green-700 text-white
               font-semibold py-2 px-4 flex-1 flex items-center justify-center"
-              onClick={() => dispatch(setDelModal('scale-100'))}
-            >
-              <FaTrashAlt />
-              Delete
-            </button>
+                onClick={() => dispatch(setDelModal('scale-100'))}
+              >
+                <FaTrashAlt />
+                Delete
+              </button>
+            )}
 
             <button
               className="bg-transparent hover:bg-green-600 text-green-600 hover:text-white

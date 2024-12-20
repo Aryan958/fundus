@@ -16,23 +16,20 @@ pub fn create_campaign(
     if title.len() > 64 {
         return Err(TitleTooLong.into());
     }
-
     if description.len() > 512 {
         return Err(DescriptionTooLong.into());
     }
-
     if image_url.len() > 256 {
         return Err(ImageUrlTooLong.into());
     }
-
-    if goal <= 0 {
+    if goal < 1_000_000_000 {
         return Err(InvalidGoalAmount.into());
     }
 
     state.campaign_count += 1;
 
     campaign.cid = state.campaign_count;
-    campaign.creator = *ctx.accounts.creator.key;
+    campaign.creator = ctx.accounts.creator.key();
     campaign.title = title;
     campaign.description = description;
     campaign.image_url = image_url;
@@ -49,7 +46,7 @@ pub fn create_campaign(
 #[derive(Accounts)]
 pub struct CreateCampaignCtx<'info> {
     #[account(mut)]
-    pub creator: Signer<'info>,
+    pub program_state: Account<'info, ProgramState>,
 
     #[account(
         init,
@@ -64,7 +61,6 @@ pub struct CreateCampaignCtx<'info> {
     pub campaign: Account<'info, Campaign>,
 
     #[account(mut)]
-    pub program_state: Account<'info, ProgramState>,
-
+    pub creator: Signer<'info>,
     pub system_program: Program<'info, System>,
 }

@@ -1,7 +1,8 @@
+use anchor_lang::prelude::*;
+
 use crate::constants::ANCHOR_DISCRIMINATOR_SIZE;
 use crate::errors::ErrorCode::AlreadyInitialized;
 use crate::states::ProgramState;
-use anchor_lang::prelude::*;
 
 pub fn initialize(ctx: Context<InitializeCtx>) -> Result<()> {
     let state = &mut ctx.accounts.program_state;
@@ -12,7 +13,7 @@ pub fn initialize(ctx: Context<InitializeCtx>) -> Result<()> {
     }
 
     state.campaign_count = 0;
-    state.platform_fee = 5; // Default platform fee (in %)
+    state.platform_fee = 5;
     state.platform_address = deployer.key();
     state.initialized = true;
 
@@ -24,11 +25,12 @@ pub struct InitializeCtx<'info> {
     #[account(
         init,
         payer = deployer,
-        space = ANCHOR_DISCRIMINATOR_SIZE + ProgramState::INIT_SPACE, // Size for Option<u64>
+        space = ANCHOR_DISCRIMINATOR_SIZE + ProgramState::INIT_SPACE,
         seeds = [b"program_state"],
         bump
     )]
     pub program_state: Account<'info, ProgramState>,
+
     #[account(mut)]
     pub deployer: Signer<'info>,
     pub system_program: Program<'info, System>,

@@ -1,15 +1,11 @@
+import { deleteCampaign, fetchCampaignDetails, getProvider } from '@/services/blockchain'
+import { globalActions } from '@/store/globalSlices'
+import { Campaign, RootState } from '@/utils/interfaces'
+import { useWallet } from '@solana/wallet-adapter-react'
 import React, { useMemo } from 'react'
 import { FaTimes, FaTrashAlt } from 'react-icons/fa'
 import { useDispatch, useSelector } from 'react-redux'
-import { globalActions } from '../store/globalSlices'
-import { Campaign, RootState } from '@/utils/interfaces'
-import {
-  deleteCampaign,
-  fetchCampaignDetails,
-  getProvider,
-} from '@/services/blockchain'
 import { toast } from 'react-toastify'
-import { useWallet } from '@solana/wallet-adapter-react'
 
 const DeleteModal = ({
   campaign,
@@ -18,33 +14,31 @@ const DeleteModal = ({
   campaign: Campaign
   pda: string
 }) => {
-  const dispatch = useDispatch()
-  const { setDelModal } = globalActions
   const { publicKey, sendTransaction, signTransaction } = useWallet()
   const { delModal } = useSelector((states: RootState) => states.globalStates)
+
+  const { setDelModal } = globalActions
+  const dispatch = useDispatch()
 
   const program = useMemo(
     () => getProvider(publicKey, signTransaction, sendTransaction),
     [publicKey, signTransaction, sendTransaction]
   )
 
-  const handleClose = () => {
-    dispatch(setDelModal('scale-0'))
-  }
-
   const handleDelete = async () => {
+    if (!publicKey) return toast.warn('Please connect wallet')
+
     await toast.promise(
       new Promise<void>(async (resolve, reject) => {
         try {
-          const tx = await deleteCampaign(program!, publicKey!, pda)
-          handleClose()
+          const tx: any = await deleteCampaign(program!, publicKey!, pda!)
 
           await fetchCampaignDetails(program!, pda)
-
+          dispatch(setDelModal('scale-0'))
+          
           console.log(tx)
-          resolve(tx as any)
+          resolve(tx)
         } catch (error) {
-          console.error('Transaction failed:', error)
           reject(error)
         }
       }),
@@ -69,7 +63,7 @@ const DeleteModal = ({
           <button
             type="button"
             className="border-0 bg-transparent focus:outline-none"
-            onClick={handleClose}
+            onClick={() => dispatch(setDelModal('scale-0'))}
           >
             <FaTimes className="text-gray-400" />
           </button>
@@ -77,7 +71,7 @@ const DeleteModal = ({
 
         <div className="mb-6 text-center">
           <p className="text-lg text-gray-600">
-            You are about to permanently delete the campaign{' '}
+            You are about to permanently delete the campaign <br />
             <strong>{campaign.title}</strong>.
           </p>
           <p className="text-sm text-gray-500">This action cannot be undone.</p>

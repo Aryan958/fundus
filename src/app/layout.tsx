@@ -7,7 +7,7 @@ import { ToastContainer } from 'react-toastify'
 import { ReactQueryProvider } from './react-query-provider'
 import AppWalletProvider from '@/components/AppWalletProvider'
 import { Provider } from 'react-redux'
-import { store } from '../store'
+import { store } from '@/store'
 
 const metadata = {
   title: 'fundus',
