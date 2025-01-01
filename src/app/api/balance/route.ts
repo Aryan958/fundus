@@ -2,26 +2,27 @@ import { Connection, clusterApiUrl, PublicKey } from '@solana/web3.js'
 import 'dotenv/config'
 
 export async function POST(request: Request) {
-  const secretKey = process.env.SECRET_KEY;
-  const providedKey = request.headers.get('x-secret-key');
+  const secretKey = process.env.SECRET_KEY
+  const cluster = process.env.NEXT_PUBLIC_CLUSTER || 'devnet'
+  const providedKey = request.headers.get('x-secret-key')
 
   if (providedKey !== secretKey) {
-    return new Response('Unauthorized', { status: 401 });
+    return new Response('Unauthorized', { status: 401 })
   }
 
-  const connection = new Connection(clusterApiUrl('devnet'));
+  const connection = new Connection(clusterApiUrl(cluster as any))
   const accountPubKey = new PublicKey(
     '6FP1Q5VD5kibWmwXaPrqMgsxSDnLr1wP3UhtvDkz6Net'
-  );
+  )
 
   try {
-    const accountInfo = await connection.getAccountInfo(accountPubKey);
+    const accountInfo = await connection.getAccountInfo(accountPubKey)
     if (accountInfo) {
-      return new Response(JSON.stringify(accountInfo), { status: 200 });
+      return new Response(JSON.stringify(accountInfo), { status: 200 })
     } else {
-      return new Response('Account not found', { status: 404 });
+      return new Response('Account not found', { status: 404 })
     }
   } catch (error) {
-    return new Response(`Error: ${error}`, { status: 500 });
+    return new Response(`Error: ${error}`, { status: 500 })
   }
 }
