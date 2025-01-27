@@ -15,16 +15,18 @@ const CampaignHero = () => {
               Discover, support, and fund campaigns that matter. Join a
               community of dreamers and changemakers, and bring ideas to life.
             </p>
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col md:flex-row items-center md:items-start">
               <Link
                 href="/account"
-                className="bg-white text-green-600 hover:bg-green-100 font-semibold py-3 px-6 rounded-lg shadow-md transition-all"
+                className="bg-white text-green-600 hover:bg-green-100 font-semibold py-3 px-6
+                rounded-lg shadow-md transition-all mb-4 md:mb-0 md:mr-4 w-full md:w-auto text-center"
               >
                 Explore Campaigns
               </Link>
               <Link
                 href="/create"
-                className="ml-4 text-white bg-green-600 hover:bg-green-700 font-semibold py-3 px-6 rounded-lg shadow-md transition-all"
+                className="text-white bg-green-600 hover:bg-green-700 font-semibold py-3 px-6
+                rounded-lg shadow-md transition-all w-full md:w-auto text-center"
               >
                 Start a Campaign
               </Link>
