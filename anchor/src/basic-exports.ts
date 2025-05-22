@@ -2,7 +2,7 @@
 import { AnchorProvider, Program } from '@coral-xyz/anchor'
 import { PublicKey } from '@solana/web3.js'
 import IDL from '../target/idl/fundus.json'
-import type { Fundus } from '../target/types/fundus'
+import type { Fundus } from '../target/types/fundus.ts'
 
 // Re-export the generated IDL and type
 export { Fundus, IDL }
